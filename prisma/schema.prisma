@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String @id @default(cuid())
+  name         String
+  email        String @unique
+  passwordHash String
+
+  cardSecretHash String? @unique
+  rfidUid        String? @unique  // Legacy — do NOT use for auth
+
+  balance            Int        @default(0)
+  dailySpendingLimit Int?
+  status             UserStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions    Transaction[]         @relation("UserTransactions")
+  paymentAttempts PaymentAttemptLog[]
+  provisionRequests ProvisionCardRequest[]
+}
+
+model Admin {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  status       AdminStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pin                  AdminPin?
+  actions              AdminActionLog[]  @relation("AdminActions")
+  approvedTransactions Transaction[]     @relation("AdminApprovedTransactions")
+  provisionRequests    ProvisionCardRequest[]
+}
+
+model AdminPin {
+  id             String    @id @default(cuid())
+  adminId        String    @unique
+  pinHash        String
+  failedAttempts Int       @default(0)
+  isActive       Boolean   @default(true)
+  lastUsedAt     DateTime?
+  rotatedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model AdminActionLog {
+  id               String          @id @default(cuid())
+  adminId          String
+  actionType       AdminActionType
+  targetType       String
+  targetIdentifier String
+  metadata         Json?
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime        @default(now())
+
+  admin Admin @relation("AdminActions", fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+model Merchant {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  status       MerchantStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions    MerchantTransaction[]
+  paymentRequests PaymentRequest[]
+  paymentAttempts PaymentAttemptLog[]
+}
+
+model MerchantTransaction {
+  id         String   @id @default(cuid())
+  merchantId String
+  txId       String
+  createdAt  DateTime @default(now())
+
+  merchant Merchant    @relation(fields: [merchantId], references: [id])
+  tx       Transaction @relation(fields: [txId], references: [id])
+
+  @@index([merchantId])           // ← NEW: fast merchant tx lookups
+  @@index([merchantId, createdAt]) // ← NEW: fast date-filtered queries
+}
+
+model PaymentRequest {
+  id         String               @id @default(cuid())
+  merchantId String
+  amount     Int
+  status     PaymentRequestStatus @default(PENDING)
+  expiresAt  DateTime
+  createdAt  DateTime             @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+
+  @@index([status, expiresAt])  // ← NEW: critical for NFC tap hot path
+  @@index([merchantId])
+}
+
+model PaymentAttemptLog {
+  id               String        @id @default(cuid())
+  merchantId       String
+  userId           String?
+  paymentRequestId String?
+  amount           Int
+  status           AttemptStatus
+  failureReason    String?
+  ipAddress        String?
+  createdAt        DateTime      @default(now())
+
+  merchant Merchant @relation(fields: [merchantId], references: [id])
+  user     User?    @relation(fields: [userId], references: [id])
+
+  @@index([merchantId, createdAt]) // ← NEW
+  @@index([status, createdAt])     // ← NEW: for failed attempt alerts
+  @@index([ipAddress, createdAt])  // ← NEW: for IP-based abuse detection
+}
+
+model Transaction {
+  id                String            @id @default(cuid())
+  userId            String
+  amount            Int
+  type              TransactionType
+  status            TransactionStatus
+  deviceId          String?
+  clientTxId        String            @unique
+  approvedByAdminId String?
+  createdAt         DateTime          @default(now())
+
+  user  User   @relation("UserTransactions", fields: [userId], references: [id])
+  admin Admin? @relation("AdminApprovedTransactions", fields: [approvedByAdminId], references: [id])
+
+  merchantLinks MerchantTransaction[]
+
+  @@index([userId, createdAt])  // ← NEW: history page + daily spend calc
+  @@index([createdAt])          // ← NEW: dashboard 7-day chart
+}
+
+model ProvisionCardRequest {
+  id        String          @id @default(cuid())
+  userId    String
+  adminId   String
+  status    ProvisionStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime        @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  admin Admin @relation(fields: [adminId], references: [id])
+
+  @@index([userId])
+  @@index([adminId])
+}
+
+enum UserStatus      { ACTIVE BLOCKED }
+enum AdminStatus     { ACTIVE BLOCKED }
+enum MerchantStatus  { ACTIVE BLOCKED }
+enum TransactionType { DEBIT CREDIT }
+enum TransactionStatus { SUCCESS FAILED QUEUED }
+enum AdminActionType {
+  CREATE_USER DELETE_USER BLOCK_USER UNBLOCK_USER
+  REASSIGN_UID TOP_UP CREATE_ADMIN BLOCK_ADMIN
+  CREATE_MERCHANT BLOCK_MERCHANT UNBLOCK_MERCHANT
+}
+enum PaymentRequestStatus { PENDING USED EXPIRED }
+enum AttemptStatus        { SUCCESS FAILED }
+enum ProvisionStatus      { PENDING COMPLETED EXPIRED }

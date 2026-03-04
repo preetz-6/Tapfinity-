@@ -1,0 +1,481 @@
+{
+  "name": "tapfinity",
+  "path": "c:\\Users\\Preetam U\\tapfinity",
+  "type": "directory",
+  "children": [
+    {
+      "name": "app",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "admin",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "transactions",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "page.tsx",
+                  "type": "file",
+                  "icon": "⚛️"
+                }
+              ]
+            },
+            {
+              "name": "users",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "page.tsx",
+                  "type": "file",
+                  "icon": "⚛️"
+                }
+              ]
+            },
+            {
+              "name": "layout.tsx",
+              "type": "file",
+              "icon": "⚛️"
+            },
+            {
+              "name": "page.tsx",
+              "type": "file",
+              "icon": "⚛️"
+            }
+          ]
+        },
+        {
+          "name": "api",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "admin",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "dashboard",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                },
+                {
+                  "name": "merchants",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                },
+                {
+                  "name": "pin",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                },
+                {
+                  "name": "users",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "auth",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "[...nextauth]",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "merchant",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "payment-request",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "nfc",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "authorize",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "route.ts",
+                      "type": "file",
+                      "icon": "📘"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "register",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "route.ts",
+                  "type": "file",
+                  "icon": "📘"
+                }
+              ]
+            },
+            {
+              "name": "transactions",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "route.ts",
+                  "type": "file",
+                  "icon": "📘"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "components",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "PinModal.tsx",
+              "type": "file",
+              "icon": "⚛️"
+            }
+          ]
+        },
+        {
+          "name": "dashboard",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "page.tsx",
+              "type": "file",
+              "icon": "⚛️"
+            }
+          ]
+        },
+        {
+          "name": "login",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "page.tsx",
+              "type": "file",
+              "icon": "⚛️"
+            }
+          ]
+        },
+        {
+          "name": "favicon.ico",
+          "type": "file",
+          "icon": "📄"
+        },
+        {
+          "name": "globals.css",
+          "type": "file",
+          "icon": "🎨"
+        },
+        {
+          "name": "layout.tsx",
+          "type": "file",
+          "icon": "⚛️"
+        },
+        {
+          "name": "page.tsx",
+          "type": "file",
+          "icon": "⚛️"
+        },
+        {
+          "name": "providers.tsx",
+          "type": "file",
+          "icon": "⚛️"
+        }
+      ]
+    },
+    {
+      "name": "lib",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "auth.ts",
+          "type": "file",
+          "icon": "📘"
+        },
+        {
+          "name": "hashCardSecret.ts",
+          "type": "file",
+          "icon": "📘"
+        },
+        {
+          "name": "prisma.ts",
+          "type": "file",
+          "icon": "📘"
+        },
+        {
+          "name": "rateLimit.ts",
+          "type": "file",
+          "icon": "📘"
+        },
+        {
+          "name": "verifyAdminPin.ts",
+          "type": "file",
+          "icon": "📘"
+        }
+      ]
+    },
+    {
+      "name": "prisma",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "migrations",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "20260122075803_init",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "migration.sql",
+                  "type": "file",
+                  "icon": "📄"
+                }
+              ]
+            },
+            {
+              "name": "20260123055205_add_user_password_hash",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "migration.sql",
+                  "type": "file",
+                  "icon": "📄"
+                }
+              ]
+            },
+            {
+              "name": "20260129173018_merchant_foundation",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "migration.sql",
+                  "type": "file",
+                  "icon": "📄"
+                }
+              ]
+            },
+            {
+              "name": "20260129180125_payment_request",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "migration.sql",
+                  "type": "file",
+                  "icon": "📄"
+                }
+              ]
+            },
+            {
+              "name": "20260130061609_add_card_secret_hash",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "migration.sql",
+                  "type": "file",
+                  "icon": "📄"
+                }
+              ]
+            },
+            {
+              "name": "migration_lock.toml",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "schema.prisma",
+          "type": "file",
+          "icon": "📄"
+        }
+      ]
+    },
+    {
+      "name": "public",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "file.svg",
+          "type": "file",
+          "icon": "🖼️"
+        },
+        {
+          "name": "globe.svg",
+          "type": "file",
+          "icon": "🖼️"
+        },
+        {
+          "name": "next.svg",
+          "type": "file",
+          "icon": "🖼️"
+        },
+        {
+          "name": "vercel.svg",
+          "type": "file",
+          "icon": "🖼️"
+        },
+        {
+          "name": "window.svg",
+          "type": "file",
+          "icon": "🖼️"
+        }
+      ]
+    },
+    {
+      "name": "tapfinity-bridge",
+      "type": "folder",
+      "icon": "📁"
+    },
+    {
+      "name": "types",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "next-auth.d.ts",
+          "type": "file",
+          "icon": "📘"
+        }
+      ]
+    },
+    {
+      "name": ".gitignore",
+      "type": "file",
+      "icon": "📁"
+    },
+    {
+      "name": "README.md",
+      "type": "file",
+      "icon": "📝"
+    },
+    {
+      "name": "eslint.config.mjs",
+      "type": "file",
+      "icon": "📄"
+    },
+    {
+      "name": "middleware.ts",
+      "type": "file",
+      "icon": "📘"
+    },
+    {
+      "name": "next.config.ts",
+      "type": "file",
+      "icon": "📘"
+    },
+    {
+      "name": "package-lock.json",
+      "type": "file",
+      "icon": "⚙️"
+    },
+    {
+      "name": "package.json",
+      "type": "file",
+      "icon": "📦"
+    },
+    {
+      "name": "postcss.config.mjs",
+      "type": "file",
+      "icon": "📄"
+    },
+    {
+      "name": "prisma.config.ts",
+      "type": "file",
+      "icon": "📘"
+    },
+    {
+      "name": "tsconfig.json",
+      "type": "file",
+      "icon": "⚙️"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-01-30T11:13:06.294Z",
+    "generator": "FileTree Pro Extension",
+    "version": "0.2.0",
+    "showIcons": true,
+    "maxDepth": 10
+  }
+}
