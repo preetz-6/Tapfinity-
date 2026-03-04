@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const day = d.toLocaleDateString("en-CA"); // YYYY-MM-DD in local
-    const found = rawRows.find(r => r.day === day);
+    const found = rawRows.find((r: DayRow) => r.day === day);
     return { day, count: found ? Number(found.count) : 0 };
   });
 
