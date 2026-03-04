@@ -67,8 +67,7 @@ export async function GET(req: NextRequest) {
   });
 
   // Group failed attempts by failure reason for the alert panel
-  const failureBreakdown = failedAttempts.reduce<Record<string, number>>((acc, a) => {
-    const key = a.failureReason ?? "UNKNOWN";
+    const failureBreakdown: Record<string, number> = failedAttempts.reduce((acc: Record<string, number>, a) => {    const key = a.failureReason ?? "UNKNOWN";
     acc[key] = (acc[key] ?? 0) + 1;
     return acc;
   }, {});
