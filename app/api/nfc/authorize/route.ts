@@ -22,11 +22,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Too many attempts. Please wait." }, { status: 429 });
     }
 
-    let body: { requestId?: unknown; cardSecret?: unknown; confirmRotation?: unknown };
+    let body: { requestId?: unknown; cardSecret?: unknown };
     try { body = await req.json(); }
     catch { return NextResponse.json({ ok: false, error: "Invalid request body" }, { status: 400 }); }
 
-    const { requestId, cardSecret, confirmRotation } = body;
+    const { requestId, cardSecret } = body;
 
     if (typeof requestId !== "string" || !requestId.trim())
       return NextResponse.json({ ok: false, error: "Missing requestId" }, { status: 400 });
@@ -37,19 +37,6 @@ export async function POST(req: NextRequest) {
 
     const secretHash = hashCardSecret(cardSecret);
 
-    // ── Phase 2: Merchant confirms card was rewritten — commit the new secret ──
-    // The merchant app calls back with confirmRotation=true + the nextSecret after rewriting the card
-    if (confirmRotation === true) {
-      const nextSecret = body.confirmRotation as unknown;
-      if (typeof nextSecret !== "string") {
-        return NextResponse.json({ ok: false, error: "Missing nextSecret for rotation" }, { status: 400 });
-      }
-      // handled below
-    }
-
-    const nextSecret = crypto.randomUUID();
-    const nextSecretHash = hashCardSecret(nextSecret);
-
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Verify payment request is valid FIRST
       const paymentRequest = await tx.paymentRequest.findUnique({ where: { id: requestId } });
@@ -57,10 +44,10 @@ export async function POST(req: NextRequest) {
         throw new Error("REQUEST_ALREADY_PROCESSED");
       }
 
-      // 2. Verify card BEFORE consuming request
+      // 2. Verify card BEFORE consuming the request
       const user = await tx.user.findUnique({ where: { cardSecretHash: secretHash } });
-      if (!user)                          throw new Error("CARD_NOT_PROVISIONED");
-      if (user.status !== "ACTIVE")       throw new Error("USER_BLOCKED");
+      if (!user)                                throw new Error("CARD_NOT_PROVISIONED");
+      if (user.status !== "ACTIVE")             throw new Error("USER_BLOCKED");
       if (user.balance < paymentRequest.amount) throw new Error("INSUFFICIENT_BALANCE");
 
       if (user.dailySpendingLimit !== null) {
@@ -70,17 +57,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 3. All checks passed — atomically consume + debit
+      // 3. All checks passed — atomically consume request + debit balance
       const locked = await tx.paymentRequest.updateMany({
         where: { id: requestId, status: "PENDING" },
         data: { status: "USED" },
       });
       if (locked.count === 0) throw new Error("REQUEST_ALREADY_PROCESSED");
 
-      // NOTE: We do NOT rotate cardSecretHash here.
-      // The merchant app writes the new secret to the card first,
-      // then calls /api/nfc/rotate-secret to commit it.
-      // This way a failed card write never breaks the user's card.
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: { balance: { decrement: paymentRequest.amount } },
@@ -111,7 +94,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return { updatedUser, transaction, user, paymentRequest };
+      return { updatedUser, transaction, user };
     });
 
     return NextResponse.json({
@@ -119,9 +102,6 @@ export async function POST(req: NextRequest) {
       transactionId: result.transaction.id,
       balance: result.updatedUser.balance,
       user: { name: result.user.name, email: result.user.email },
-      // Send next secret — merchant writes it to card, then calls /api/nfc/rotate-secret
-      nextSecret,
-      userId: result.user.id,
     });
 
   } catch (err: unknown) {

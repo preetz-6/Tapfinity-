@@ -7,42 +7,38 @@ declare global {
   interface NDEFReadingEvent { message: { records: NDEFScanRecord[] }; }
   interface NDEFReader {
     scan(): Promise<void>;
-    write(data: { records: Array<{ recordType: string; data: string }> }): Promise<void>;
     onreading: ((event: NDEFReadingEvent) => void) | null;
     abort(): Promise<void>;
   }
   interface Window { NDEFReader: { new(): NDEFReader }; }
 }
 
-type State = "ENTER" | "WAITING" | "WRITING" | "SUCCESS" | "FAILED";
-const WAIT_SECONDS = 15;
+type State = "ENTER" | "PREPARING" | "WAITING" | "SUCCESS" | "FAILED";
+const WAIT_SECONDS = 20;
 
 const FAILURE_MESSAGES: Record<string, { title: string; desc: string }> = {
-  "INSUFFICIENT_BALANCE":      { title: "Insufficient Balance",  desc: "The customer's wallet doesn't have enough funds." },
-  "CARD_NOT_PROVISIONED":      { title: "Card Not Recognised",   desc: "This NFC card hasn't been registered in the system." },
-  "USER_BLOCKED":              { title: "Account Blocked",       desc: "This customer's account is blocked. Contact admin." },
-  "REQUEST_ALREADY_PROCESSED": { title: "Already Processed",     desc: "This payment request was already used. Please create a new one." },
-  "Too many attempts. Please wait.": { title: "Too Many Attempts", desc: "Wait a few seconds before trying again." },
-  "TIMEOUT":                   { title: "Timed Out",             desc: "No card tapped within 15 seconds." },
-  "DAILY_LIMIT_EXCEEDED":      { title: "Daily Limit Reached",   desc: "The customer has hit their daily spending limit." },
-  "DEFAULT":                   { title: "Payment Failed",        desc: "Something went wrong processing this payment." },
+  "INSUFFICIENT_BALANCE":            { title: "Insufficient Balance",  desc: "The customer's wallet doesn't have enough funds." },
+  "CARD_NOT_PROVISIONED":            { title: "Card Not Recognised",   desc: "This NFC card hasn't been registered in the system." },
+  "USER_BLOCKED":                    { title: "Account Blocked",       desc: "This customer's account is blocked. Contact admin." },
+  "REQUEST_ALREADY_PROCESSED":       { title: "Already Processed",     desc: "This payment request was already used. Please create a new one." },
+  "Too many attempts. Please wait.": { title: "Too Many Attempts",     desc: "Wait a few seconds before trying again." },
+  "TIMEOUT":                         { title: "Timed Out",             desc: "No card was tapped in time." },
+  "DAILY_LIMIT_EXCEEDED":            { title: "Daily Limit Reached",   desc: "The customer has hit their daily spending limit." },
+  "NFC_NOT_SUPPORTED":               { title: "NFC Not Available",     desc: "Web NFC is only supported on Android Chrome." },
+  "DEFAULT":                         { title: "Payment Failed",        desc: "Something went wrong processing this payment." },
 };
 
 export default function ReceivePayment() {
-  const [amount, setAmount] = useState("");
-  const [state, setState] = useState<State>("ENTER");
-  const [requestId, setRequestId] = useState<string | null>(null);
+  const [amount, setAmount]               = useState("");
+  const [state, setState]                 = useState<State>("ENTER");
+  const [requestId, setRequestId]         = useState<string | null>(null);
   const [failureReason, setFailureReason] = useState("DEFAULT");
-  const [timeLeft, setTimeLeft] = useState(WAIT_SECONDS);
-  const [successData, setSuccessData] = useState<{ name?: string; balance?: number } | null>(null);
-  const [writeStatus, setWriteStatus] = useState<"writing" | "done" | "failed">("writing");
+  const [timeLeft, setTimeLeft]           = useState(WAIT_SECONDS);
+  const [successData, setSuccessData]     = useState<{ name?: string; balance?: number } | null>(null);
 
-  // Refs to avoid stale closures and prevent double-processing
-  const processedRef = useRef(false);
-  const ndefRef = useRef<NDEFReader | null>(null);
+  const processedRef  = useRef(false);
   const scanActiveRef = useRef(false);
-  const amountRef = useRef(amount);
-  amountRef.current = amount;
+  const ndefRef       = useRef<NDEFReader | null>(null);
 
   const fail = useCallback((reason: string) => {
     setFailureReason(reason);
@@ -58,7 +54,7 @@ export default function ReceivePayment() {
     }
   }, []);
 
-  function reset() {
+  const reset = useCallback(() => {
     stopScan();
     processedRef.current = false;
     setAmount("");
@@ -67,106 +63,69 @@ export default function ReceivePayment() {
     setState("ENTER");
     setFailureReason("DEFAULT");
     setSuccessData(null);
-    setWriteStatus("writing");
-  }
+  }, [stopScan]);
 
-  async function rewriteCard(nextSecret: string, userId: string) {
-    if (!("NDEFReader" in window)) { setWriteStatus("failed"); return; }
-    try {
-      const ndef = new window.NDEFReader();
-      await ndef.write({
-        records: [{ recordType: "text", data: JSON.stringify({ tpf: "1", secret: nextSecret }) }],
-      });
-      // Card write succeeded — now commit the rotation server-side
-      await fetch("/api/nfc/rotate-secret", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, nextSecret }),
-      });
-      setWriteStatus("done");
-    } catch {
-      // Card write failed — rotation NOT committed, old secret still works
-      setWriteStatus("failed");
-    }
-  }
-
-  async function startNfcReader(reqId: string) {
-    if (!("NDEFReader" in window)) {
-      fail("CARD_NOT_PROVISIONED");
-      return;
-    }
-    try {
-      stopScan(); // clean up any previous reader
-      const ndef = new window.NDEFReader();
-      ndefRef.current = ndef;
-      scanActiveRef.current = true;
-      await ndef.scan();
-
-      ndef.onreading = async (event) => {
-        // Guard: only process once per payment, only if scan is still active
-        if (processedRef.current || !scanActiveRef.current) return;
-        processedRef.current = true;
-        stopScan();
-
-        const record = event.message.records[0];
-        if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
-
-        try {
-          const decoded = new TextDecoder().decode(record.data);
-          const parsed = JSON.parse(decoded);
-          if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
-
-          const res = await fetch("/api/nfc/authorize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ requestId: reqId, cardSecret: parsed.secret }),
-          });
-          const result = await res.json();
-
-          if (result.ok) {
-            setSuccessData({ name: result.user?.name, balance: result.balance });
-            setState("WRITING");
-            setWriteStatus("writing");
-            if (result.nextSecret && result.userId) {
-              await rewriteCard(result.nextSecret, result.userId);
-            }
-            setState("SUCCESS");
-          } else {
-            fail(result.error || "DEFAULT");
-          }
-        } catch {
-          fail("DEFAULT");
-        }
-      };
-    } catch {
-      fail("DEFAULT");
-    }
-  }
-
-  async function createRequest() {
-    if (!amount || Number(amount) <= 0) return;
-    processedRef.current = false;
-    const res = await fetch("/api/merchant/payment-request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: Number(amount) }),
-    });
-    const data = await res.json();
-    if (!data.ok) { fail(data.error || "DEFAULT"); return; }
-    setRequestId(data.requestId);
-    setTimeLeft(WAIT_SECONDS);
-    setState("WAITING");
-  }
-
-  // Start NFC when entering WAITING state
+  // Start NFC scan after request is created
   useEffect(() => {
-    if (state === "WAITING" && requestId) {
-      startNfcReader(requestId);
+    if (state !== "PREPARING" || !requestId) return;
+    let cancelled = false;
+
+    async function initScan() {
+      if (!("NDEFReader" in window)) { fail("NFC_NOT_SUPPORTED"); return; }
+      try {
+        stopScan();
+        const ndef = new window.NDEFReader();
+        ndefRef.current = ndef;
+        scanActiveRef.current = true;
+
+        await ndef.scan(); // triggers NFC permission + hardware init
+        if (cancelled) return;
+
+        // Scanner ready — start countdown NOW
+        setState("WAITING");
+        setTimeLeft(WAIT_SECONDS);
+
+        ndef.onreading = async (event) => {
+          if (processedRef.current || !scanActiveRef.current) return;
+          processedRef.current = true;
+          stopScan();
+
+          const record = event.message.records[0];
+          if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
+
+          try {
+            const decoded = new TextDecoder().decode(record.data);
+            const parsed  = JSON.parse(decoded);
+            if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
+
+            const res = await fetch("/api/nfc/authorize", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ requestId, cardSecret: parsed.secret }),
+            });
+            const result = await res.json();
+
+            if (result.ok) {
+              setSuccessData({ name: result.user?.name, balance: result.balance });
+              setState("SUCCESS");
+            } else {
+              fail(result.error || "DEFAULT");
+            }
+          } catch {
+            fail("DEFAULT");
+          }
+        };
+      } catch {
+        if (!cancelled) fail("DEFAULT");
+      }
     }
+
+    initScan();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, requestId]);
 
-  // Countdown timer
+  // Countdown
   useEffect(() => {
     if (state !== "WAITING") return;
     if (timeLeft <= 0) { fail("TIMEOUT"); return; }
@@ -179,17 +138,28 @@ export default function ReceivePayment() {
     if (state !== "SUCCESS") return;
     const t = setTimeout(reset, 5000);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [state, reset]);
 
   // Cleanup on unmount
   useEffect(() => () => stopScan(), [stopScan]);
 
+  async function createRequest() {
+    if (!amount || Number(amount) <= 0) return;
+    processedRef.current = false;
+    setState("PREPARING");
+    const res = await fetch("/api/merchant/payment-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: Number(amount) }),
+    });
+    const data = await res.json();
+    if (!data.ok) { fail(data.error || "DEFAULT"); return; }
+    setRequestId(data.requestId);
+  }
+
   async function cancelRequest() {
     stopScan();
-    if (requestId) {
-      await fetch(`/api/merchant/payment-request/${requestId}`, { method: "DELETE" }).catch(() => {});
-    }
+    if (requestId) await fetch(`/api/merchant/payment-request/${requestId}`, { method: "DELETE" }).catch(() => {});
     reset();
   }
 
@@ -232,7 +202,8 @@ export default function ReceivePayment() {
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Custom Amount</p>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₹</span>
-                  <input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)}
+                  <input type="number" placeholder="0.00" value={amount}
+                    onChange={e => setAmount(e.target.value)}
                     className="w-full pl-8 pr-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white text-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition placeholder-gray-700" />
                 </div>
               </div>
@@ -240,6 +211,25 @@ export default function ReceivePayment() {
                 className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-bold text-lg shadow-lg shadow-violet-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                 Charge ₹{amount || "0"}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* PREPARING */}
+        {state === "PREPARING" && (
+          <div className="text-center">
+            <div className="bg-[#0d1829] border border-white/10 rounded-2xl p-8 space-y-6">
+              <div className="w-16 h-16 mx-auto rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400 animate-spin" style={{ animationDuration: "1.5s" }}>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Starting NFC scanner...</p>
+                <p className="text-sm text-gray-500 mt-1">Allow NFC permission if prompted</p>
+              </div>
+              <p className="text-2xl font-bold text-violet-400">₹{amount}</p>
+              <button onClick={cancelRequest} className="text-sm text-gray-600 hover:text-gray-400 underline underline-offset-2 transition">Cancel</button>
             </div>
           </div>
         )}
@@ -259,32 +249,16 @@ export default function ReceivePayment() {
                   </svg>
                 </div>
               </div>
-              <h2 className="text-xl font-bold text-white mb-1">Waiting for tap...</h2>
+              <h2 className="text-xl font-bold text-white mb-1">Tap card now</h2>
               <p className="text-3xl font-bold text-violet-400 mt-3 mb-6">₹{amount}</p>
               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
                 <div className={`h-full rounded-full transition-all duration-1000 ${timeLeft > 5 ? "bg-violet-500" : "bg-red-500"}`}
                   style={{ width: `${progressPercent}%` }} />
               </div>
-              <p className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-400" : "text-gray-500"}`}>{timeLeft}s remaining</p>
+              <p className={`text-sm font-medium ${timeLeft <= 5 ? "text-red-400" : "text-gray-500"}`}>
+                {timeLeft}s remaining
+              </p>
               <button onClick={cancelRequest} className="mt-6 text-sm text-gray-500 hover:text-gray-300 underline underline-offset-2 transition">Cancel</button>
-            </div>
-          </div>
-        )}
-
-        {/* WRITING */}
-        {state === "WRITING" && (
-          <div className="text-center">
-            <div className="bg-[#030e08] border border-emerald-500/20 rounded-2xl p-8 space-y-5">
-              <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-emerald-400 animate-spin">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-emerald-400 font-bold">Payment Approved</p>
-                <p className="text-sm text-gray-500 mt-1">Keep card still — securing for next use...</p>
-              </div>
-              <p className="text-3xl font-black text-white">₹{amount}</p>
             </div>
           </div>
         )}
@@ -312,13 +286,6 @@ export default function ReceivePayment() {
               {successData?.balance !== undefined && (
                 <p className="text-xs text-gray-600">Customer balance: ₹{successData.balance.toLocaleString("en-IN")}</p>
               )}
-              <div className={`inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1 border ${
-                writeStatus === "done"   ? "bg-emerald-500/8 border-emerald-500/15 text-emerald-600" :
-                writeStatus === "failed" ? "bg-amber-500/8 border-amber-500/15 text-amber-600" :
-                "bg-white/5 border-white/10 text-gray-600"
-              }`}>
-                {writeStatus === "done" ? "Card secured" : writeStatus === "failed" ? "Card rewrite failed — card still works" : "Securing card..."}
-              </div>
               <p className="text-xs text-gray-600">Returning to home...</p>
             </div>
           </div>
@@ -330,7 +297,9 @@ export default function ReceivePayment() {
             <div className="bg-[#0d0508] border border-red-500/30 rounded-2xl p-8 space-y-5">
               <div className="w-24 h-24 mx-auto rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400">
-                  <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
               </div>
               <div>
