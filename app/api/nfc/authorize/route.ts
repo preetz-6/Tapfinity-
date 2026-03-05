@@ -36,21 +36,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid request parameters" }, { status: 400 });
 
     const secretHash = hashCardSecret(cardSecret);
-
-    // Generate the next rolling secret BEFORE the transaction
     const nextSecret = crypto.randomUUID();
     const nextSecretHash = hashCardSecret(nextSecret);
 
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      const locked = await tx.paymentRequest.updateMany({
-        where: { id: requestId, status: "PENDING", expiresAt: { gt: new Date() } },
-        data: { status: "USED" },
+
+      // ── 1. Verify payment request is still valid FIRST ──
+      const paymentRequest = await tx.paymentRequest.findUnique({
+        where: { id: requestId },
       });
-      if (locked.count === 0) throw new Error("REQUEST_ALREADY_PROCESSED");
+      if (!paymentRequest)                    throw new Error("REQUEST_ALREADY_PROCESSED");
+      if (paymentRequest.status !== "PENDING") throw new Error("REQUEST_ALREADY_PROCESSED");
+      if (paymentRequest.expiresAt < new Date()) throw new Error("REQUEST_ALREADY_PROCESSED");
 
-      const paymentRequest = await tx.paymentRequest.findUnique({ where: { id: requestId } });
-      if (!paymentRequest) throw new Error("Invalid payment request");
-
+      // ── 2. Verify card secret BEFORE consuming the request ──
       const user = await tx.user.findUnique({ where: { cardSecretHash: secretHash } });
       if (!user) throw new Error("CARD_NOT_PROVISIONED");
       if (user.status !== "ACTIVE") throw new Error("USER_BLOCKED");
@@ -63,12 +62,18 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Debit balance AND rotate the card secret atomically
+      // ── 3. All checks passed — now atomically consume + debit ──
+      const locked = await tx.paymentRequest.updateMany({
+        where: { id: requestId, status: "PENDING" },
+        data: { status: "USED" },
+      });
+      if (locked.count === 0) throw new Error("REQUEST_ALREADY_PROCESSED");
+
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
           balance: { decrement: paymentRequest.amount },
-          cardSecretHash: nextSecretHash, // 🔄 Rolling secret rotation
+          cardSecretHash: nextSecretHash,
         },
       });
 
@@ -105,12 +110,35 @@ export async function POST(req: NextRequest) {
       transactionId: result.transaction.id,
       balance: result.updatedUser.balance,
       user: { name: result.user.name, email: result.user.email },
-      // 🔄 Send new secret to merchant app to rewrite the card
       nextSecret,
     });
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Server error";
+
+    // Log failed attempt if we can extract merchant from the request
+    // (best effort, non-blocking)
+    try {
+      const body = await req.json().catch(() => ({})) as { requestId?: string };
+      if (body.requestId) {
+        const pr = await prisma.paymentRequest.findUnique({
+          where: { id: body.requestId },
+          select: { merchantId: true, amount: true },
+        });
+        if (pr) {
+          await prisma.paymentAttemptLog.create({
+            data: {
+              merchantId: pr.merchantId,
+              amount: pr.amount,
+              status: "FAILED",
+              failureReason: message,
+              ipAddress: ip,
+            },
+          });
+        }
+      }
+    } catch { /* non-fatal */ }
+
     return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 }
