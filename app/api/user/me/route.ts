@@ -3,16 +3,10 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token || token.role !== "USER") {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
@@ -20,15 +14,21 @@ export async function GET(req: NextRequest) {
     select: {
       balance: true,
       status: true,
+      cardSecretHash: true,
+      dailySpendingLimit: true,
+      name: true,
     },
   });
 
   if (!user) {
-    return NextResponse.json(
-      { error: "User not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  return NextResponse.json({
+    balance: user.balance,
+    status: user.status,
+    name: user.name,
+    hasCard: !!user.cardSecretHash,
+    dailySpendingLimit: user.dailySpendingLimit,
+  });
 }
