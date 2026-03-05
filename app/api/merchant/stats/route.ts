@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 
+type MerchantTx = {
+  tx: { amount: number; status: string };
+};
+
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   if (!token || token.role !== "MERCHANT") {
@@ -9,7 +13,6 @@ export async function GET(req: NextRequest) {
   }
 
   const merchantId = token.id as string;
-
   const now = new Date();
   const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
   const startOfWeek  = new Date(now); startOfWeek.setDate(now.getDate() - 7);
@@ -34,14 +37,15 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  const sum = (txs: typeof todayTxs) =>
-    txs.filter(t => t.tx.status === "SUCCESS").reduce((s, t) => s + t.tx.amount, 0);
+  const sum = (txs: MerchantTx[]) =>
+    txs.filter((t: MerchantTx) => t.tx.status === "SUCCESS")
+       .reduce((s: number, t: MerchantTx) => s + t.tx.amount, 0);
 
   return NextResponse.json({
-    today:    { revenue: sum(todayTxs),  count: todayTxs.length },
-    week:     { revenue: sum(weekTxs),   count: weekTxs.length },
-    month:    { revenue: sum(monthTxs),  count: monthTxs.length },
-    total:    { count: totalTxs },
+    today:  { revenue: sum(todayTxs),  count: todayTxs.length },
+    week:   { revenue: sum(weekTxs),   count: weekTxs.length },
+    month:  { revenue: sum(monthTxs),  count: monthTxs.length },
+    total:  { count: totalTxs },
     failedToday,
   });
 }
