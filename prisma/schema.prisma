@@ -14,7 +14,7 @@ model User {
   passwordHash String
 
   cardSecretHash String? @unique
-  rfidUid        String? @unique  // Legacy — do NOT use for auth
+  rfidUid        String? @unique
 
   balance            Int        @default(0)
   dailySpendingLimit Int?
@@ -23,8 +23,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  transactions    Transaction[]         @relation("UserTransactions")
-  paymentAttempts PaymentAttemptLog[]
+  transactions      Transaction[]         @relation("UserTransactions")
+  paymentAttempts   PaymentAttemptLog[]
   provisionRequests ProvisionCardRequest[]
 }
 
@@ -99,8 +99,8 @@ model MerchantTransaction {
   merchant Merchant    @relation(fields: [merchantId], references: [id])
   tx       Transaction @relation(fields: [txId], references: [id])
 
-  @@index([merchantId])           // ← NEW: fast merchant tx lookups
-  @@index([merchantId, createdAt]) // ← NEW: fast date-filtered queries
+  @@index([merchantId])
+  @@index([merchantId, createdAt])
 }
 
 model PaymentRequest {
@@ -113,7 +113,7 @@ model PaymentRequest {
 
   merchant Merchant @relation(fields: [merchantId], references: [id])
 
-  @@index([status, expiresAt])  // ← NEW: critical for NFC tap hot path
+  @@index([status, expiresAt])
   @@index([merchantId])
 }
 
@@ -131,9 +131,9 @@ model PaymentAttemptLog {
   merchant Merchant @relation(fields: [merchantId], references: [id])
   user     User?    @relation(fields: [userId], references: [id])
 
-  @@index([merchantId, createdAt]) // ← NEW
-  @@index([status, createdAt])     // ← NEW: for failed attempt alerts
-  @@index([ipAddress, createdAt])  // ← NEW: for IP-based abuse detection
+  @@index([merchantId, createdAt])
+  @@index([status, createdAt])
+  @@index([ipAddress, createdAt])
 }
 
 model Transaction {
@@ -152,8 +152,8 @@ model Transaction {
 
   merchantLinks MerchantTransaction[]
 
-  @@index([userId, createdAt])  // ← NEW: history page + daily spend calc
-  @@index([createdAt])          // ← NEW: dashboard 7-day chart
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 model ProvisionCardRequest {
@@ -171,16 +171,59 @@ model ProvisionCardRequest {
   @@index([adminId])
 }
 
-enum UserStatus      { ACTIVE BLOCKED }
-enum AdminStatus     { ACTIVE BLOCKED }
-enum MerchantStatus  { ACTIVE BLOCKED }
-enum TransactionType { DEBIT CREDIT }
-enum TransactionStatus { SUCCESS FAILED QUEUED }
-enum AdminActionType {
-  CREATE_USER DELETE_USER BLOCK_USER UNBLOCK_USER
-  REASSIGN_UID TOP_UP CREATE_ADMIN BLOCK_ADMIN
-  CREATE_MERCHANT BLOCK_MERCHANT UNBLOCK_MERCHANT
+enum UserStatus {
+  ACTIVE
+  BLOCKED
 }
-enum PaymentRequestStatus { PENDING USED EXPIRED }
-enum AttemptStatus        { SUCCESS FAILED }
-enum ProvisionStatus      { PENDING COMPLETED EXPIRED }
+
+enum AdminStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum MerchantStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum TransactionStatus {
+  SUCCESS
+  FAILED
+  QUEUED
+}
+
+enum AdminActionType {
+  CREATE_USER
+  DELETE_USER
+  BLOCK_USER
+  UNBLOCK_USER
+  REASSIGN_UID
+  TOP_UP
+  CREATE_ADMIN
+  BLOCK_ADMIN
+  CREATE_MERCHANT
+  BLOCK_MERCHANT
+  UNBLOCK_MERCHANT
+}
+
+enum PaymentRequestStatus {
+  PENDING
+  USED
+  EXPIRED
+}
+
+enum AttemptStatus {
+  SUCCESS
+  FAILED
+}
+
+enum ProvisionStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
