@@ -16,7 +16,7 @@ type Tx = {
 };
 
 export default function MerchantChart() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<{ merchant: string; amount: number }[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

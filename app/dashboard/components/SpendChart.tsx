@@ -16,7 +16,7 @@ type Tx = {
 };
 
 export default function SpendChart() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<{ date: string; amount: number }[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
