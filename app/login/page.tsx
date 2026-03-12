@@ -121,7 +121,6 @@ export default function Login() {
                       : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
-                  <span className="text-base">{c.icon}</span>
                   {c.label}
                 </button>
               );

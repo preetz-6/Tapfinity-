@@ -36,8 +36,7 @@ export default function CardPage() {
     setBlocking(true);
     const res = await fetch("/api/user/block-card", { method: "POST" });
     setBlocking(false);
-    if (res.ok) { toast(data.status === "BLOCKED" ? "Card blocked successfully." : "Card unblocked successfully.", "success"); setStatus("BLOCKED"); setConfirmBlock(false); }
-    else { toast("Failed to update card status.", "error"); }
+  if (res.ok) { toast(status === "BLOCKED" ? "Card unblocked successfully." : "Card blocked successfully.", "success"); setStatus(s => s === "BLOCKED" ? "ACTIVE" : "BLOCKED"); setConfirmBlock(false); }    else { toast("Failed to update card status.", "error"); }
   }
 
   async function saveLimit(value: number | null) {
