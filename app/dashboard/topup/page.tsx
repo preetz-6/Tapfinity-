@@ -41,7 +41,7 @@ export default function TopupPage() {
 
           {/* Coming soon */}
           <div className="rounded-xl bg-white/3 border border-white/5 p-4 text-center space-y-2">
-            <span className="text-2xl">🚧</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-orange-400/60 mx-auto"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <p className="text-sm font-semibold text-white">UPI Top-up Coming Soon</p>
             <p className="text-xs text-gray-500">Razorpay integration is being set up. Ask your admin to top-up your wallet for now.</p>
           </div>

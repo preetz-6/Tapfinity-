@@ -64,10 +64,10 @@ export default function ExportPage() {
   }
 
   const PRESETS: { key: Preset; label: string; icon: string }[] = [
-    { key: "today", label: "Today", icon: "📅" },
-    { key: "week", label: "Last 7 days", icon: "📆" },
-    { key: "month", label: "Last 30 days", icon: "🗓️" },
-    { key: "custom", label: "Custom range", icon: "✏️" },
+    { key: "today", label: "Today", icon: "T" },
+    { key: "week", label: "Last 7 days", icon: "7D" },
+    { key: "month", label: "Last 30 days", icon: "30D" },
+    { key: "custom", label: "Custom range", icon: "–" },
   ];
 
   return (
@@ -176,7 +176,7 @@ export default function ExportPage() {
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               Preparing…
             </>
-          ) : "⬇ Download CSV Report"}
+          ) : "Download CSV Report"}
         </button>
 
         {exportError && (

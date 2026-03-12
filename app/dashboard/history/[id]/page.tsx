@@ -51,7 +51,7 @@ export default function TransactionDetailPage() {
 
         {notFound && (
           <div className="text-center py-20">
-            <p className="text-4xl mb-3">🔍</p>
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center mx-auto mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-600"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
             <p className="text-gray-400">Transaction not found</p>
             <Link href="/dashboard/history" className="text-blue-400 text-sm mt-3 block">
               Back to history

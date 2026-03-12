@@ -27,7 +27,7 @@ export default function PaymentSuccess({
     <div className="fixed inset-0 bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white">
       <div className="relative w-full max-w-sm px-6 text-center">
         {/* SUCCESS ICON */}
-        <div className="text-7xl mb-4 animate-pop">✅</div>
+        <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center mx-auto mb-4 animate-pop"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg></div>
 
         <h1 className="text-3xl font-bold">Payment Successful</h1>
         <p className="text-xl mt-2">₹{amount}</p>

@@ -238,7 +238,7 @@ export default function AdminDashboard() {
             {recentActions.length === 0 && <p className="text-sm text-gray-500">No actions yet</p>}
             {recentActions.slice(0, 6).map(a => (
               <div key={a.id} className="flex items-start gap-2.5 py-2.5 border-b border-white/5 last:border-0">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">⚙</div>
+                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight">{a.actionType.replace(/_/g, " ")}</p>
                   <p className="text-xs text-gray-600 truncate mt-0.5">{a.targetIdentifier}</p>

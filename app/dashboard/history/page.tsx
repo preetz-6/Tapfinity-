@@ -103,7 +103,7 @@ export default function HistoryPage() {
 
           {!loading && filtered.length === 0 && (
             <div className="py-16 text-center">
-              <p className="text-4xl mb-3">📭</p>
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center mx-auto mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-600"><path d="M22 12h-6l-2 3H10l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
               <p className="text-gray-500 text-sm">No transactions</p>
             </div>
           )}
