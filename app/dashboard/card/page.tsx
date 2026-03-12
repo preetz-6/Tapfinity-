@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import UserShell from "../UserShell";
+import { useToast } from "@/app/components/Toast";
 
 const QUICK_LIMITS = [100, 200, 500, 1000, 2000];
 
 export default function CardPage() {
+  const { toast } = useToast();
   const [status, setStatus] = useState<"ACTIVE" | "BLOCKED">("ACTIVE");
   const [hasCard, setHasCard] = useState(false);
   const [loadingCard, setLoadingCard] = useState(true);
@@ -34,8 +36,8 @@ export default function CardPage() {
     setBlocking(true);
     const res = await fetch("/api/user/block-card", { method: "POST" });
     setBlocking(false);
-    if (res.ok) { setStatus("BLOCKED"); setConfirmBlock(false); }
-    else alert("Failed to block card.");
+    if (res.ok) { toast(data.status === "BLOCKED" ? "Card blocked successfully." : "Card unblocked successfully.", "success"); setStatus("BLOCKED"); setConfirmBlock(false); }
+    else { toast("Failed to update card status.", "error"); }
   }
 
   async function saveLimit(value: number | null) {

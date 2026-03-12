@@ -19,7 +19,7 @@ export default async function HomePage() {
       {/* ── NAVBAR ── */}
       <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 py-4 bg-[#030508]/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-sm shadow-lg shadow-blue-500/30">📳</div>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
           <span className="text-lg font-bold tracking-tight">Tap<span className="text-blue-400">finity</span></span>
         </div>
         <div className="flex items-center gap-3">
@@ -96,8 +96,8 @@ export default async function HomePage() {
           <div className="hidden md:block absolute top-16 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-blue-500/0 via-blue-500/40 to-blue-500/0" />
 
           {[
-            { step: "01", icon: "💰", title: "Merchant enters amount", desc: "The merchant opens their phone, enters the charge amount, and taps Continue." },
-            { step: "02", icon: "📳", title: "Customer taps NFC card", desc: "The customer holds their NFC card to the merchant's phone. The card secret is read instantly." },
+            { step: "01", icon: "01", title: "Merchant enters amount", desc: "The merchant opens their phone, enters the charge amount, and taps Continue." },
+            { step: "02", icon: "02", title: "Customer taps NFC card", desc: "The customer holds their NFC card to the merchant's phone. The card secret is read instantly." },
             { step: "03", icon: "✓", title: "Payment confirmed", desc: "Backend verifies the card, debits the wallet atomically, and both parties see instant confirmation." },
           ].map(s => (
             <div key={s.step} className="relative rounded-2xl border border-white/8 bg-[#080d18] p-7 hover:border-blue-500/20 transition group">
@@ -122,15 +122,15 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { icon: "🔐", title: "Card Secret Hashing", desc: "NFC UID is never used. A random secret is written to the card and only its SHA-256 hash is stored — preventing cloning attacks.", accent: "blue" },
-            { icon: "⚡", title: "Atomic Transactions", desc: "Every payment uses prisma.$transaction() — balance deduction, transaction record, and merchant link happen atomically or not at all.", accent: "violet" },
-            { icon: "🛡️", title: "Rate Limiting", desc: "IP-based rate limiting on the NFC authorize endpoint. 5 attempts per 5 seconds — brute force is blocked at the server.", accent: "cyan" },
-            { icon: "👑", title: "Admin Control Panel", desc: "Full user and merchant management. Create accounts, assign NFC cards, block/unblock users, top-up wallets, and export audit logs.", accent: "blue" },
-            { icon: "📊", title: "Live Analytics", desc: "Real-time transaction charts, credit/debit split, spending trends, and merchant performance — all in the admin dashboard.", accent: "violet" },
-            { icon: "🔄", title: "Idempotency", desc: "Every transaction has a unique clientTxId. Duplicate payments from network retries are automatically rejected.", accent: "cyan" },
-            { icon: "📱", title: "Mobile First", desc: "Built for phones. The merchant receive page, admin panel, and user dashboard all work seamlessly on any screen size.", accent: "blue" },
-            { icon: "🏪", title: "Multi-Merchant", desc: "Multiple merchants can operate simultaneously. Each merchant has their own transaction history and is linked to payments.", accent: "violet" },
-            { icon: "📤", title: "Audit Export", desc: "Download filtered CSV reports by date range, merchant, user, or status. Full audit trail for compliance and accounting.", accent: "cyan" },
+            { icon: "SHA", title: "Card Secret Hashing", desc: "NFC UID is never used. A random secret is written to the card and only its SHA-256 hash is stored — preventing cloning attacks.", accent: "blue" },
+            { icon: "ATM", title: "Atomic Transactions", desc: "Every payment uses prisma.$transaction() — balance deduction, transaction record, and merchant link happen atomically or not at all.", accent: "violet" },
+            { icon: "RLT", title: "Rate Limiting", desc: "IP-based rate limiting on the NFC authorize endpoint. 5 attempts per 5 seconds — brute force is blocked at the server.", accent: "cyan" },
+            { icon: "ADM", title: "Admin Control Panel", desc: "Full user and merchant management. Create accounts, assign NFC cards, block/unblock users, top-up wallets, and export audit logs.", accent: "blue" },
+            { icon: "CHT", title: "Live Analytics", desc: "Real-time transaction charts, credit/debit split, spending trends, and merchant performance — all in the admin dashboard.", accent: "violet" },
+            { icon: "IDM", title: "Idempotency", desc: "Every transaction has a unique clientTxId. Duplicate payments from network retries are automatically rejected.", accent: "cyan" },
+            { icon: "MOB", title: "Mobile First", desc: "Built for phones. The merchant receive page, admin panel, and user dashboard all work seamlessly on any screen size.", accent: "blue" },
+            { icon: "MRC", title: "Multi-Merchant", desc: "Multiple merchants can operate simultaneously. Each merchant has their own transaction history and is linked to payments.", accent: "violet" },
+            { icon: "CSV", title: "Audit Export", desc: "Download filtered CSV reports by date range, merchant, user, or status. Full audit trail for compliance and accounting.", accent: "cyan" },
           ].map(f => {
             const accents: Record<string, string> = {
               blue: "border-blue-500/15 hover:border-blue-500/30 hover:bg-blue-500/5",
@@ -162,9 +162,9 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { icon: "⚙️", role: "Admin", color: "from-blue-500 to-indigo-600", border: "border-blue-500/20", perms: ["Create & manage users", "Provision NFC cards", "Top-up wallets", "Block / unblock accounts", "Export audit logs", "View all transactions"] },
-            { icon: "🏪", role: "Merchant", color: "from-violet-500 to-purple-600", border: "border-violet-500/20", perms: ["Accept NFC payments", "View transaction history", "Real-time payment status", "Automatic amount entry"] },
-            { icon: "👤", role: "User", color: "from-orange-500 to-amber-600", border: "border-orange-500/20", perms: ["Tap-to-pay at merchants", "Check wallet balance", "View spending history", "Top-up via UPI", "Block card instantly"] },
+            { icon: "A", role: "Admin", color: "from-blue-500 to-indigo-600", border: "border-blue-500/20", perms: ["Create & manage users", "Provision NFC cards", "Top-up wallets", "Block / unblock accounts", "Export audit logs", "View all transactions"] },
+            { icon: "M", role: "Merchant", color: "from-violet-500 to-purple-600", border: "border-violet-500/20", perms: ["Accept NFC payments", "View transaction history", "Real-time payment status", "Automatic amount entry"] },
+            { icon: "U", role: "User", color: "from-orange-500 to-amber-600", border: "border-orange-500/20", perms: ["Tap-to-pay at merchants", "Check wallet balance", "View spending history", "Top-up via UPI", "Block card instantly"] },
           ].map(r => (
             <div key={r.role} className={`rounded-2xl border ${r.border} bg-[#080d18] p-7 flex flex-col`}>
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center text-2xl mb-5 shadow-lg`}>{r.icon}</div>
@@ -187,7 +187,7 @@ export default async function HomePage() {
         <div className="rounded-3xl border border-white/8 bg-gradient-to-br from-blue-500/8 via-violet-500/5 to-cyan-500/8 p-12 sm:p-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.08),transparent_70%)]" />
           <div className="relative">
-            <p className="text-4xl mb-5">📳</p>
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center mx-auto mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
             <h2 className="text-3xl sm:text-4xl font-black mb-4">Ready to go cashless?</h2>
             <p className="text-gray-400 mb-8 max-w-md mx-auto">Set up takes minutes. Add your admin, create users, provision cards, and start accepting payments today.</p>
             <Link href="/login"
@@ -200,7 +200,7 @@ export default async function HomePage() {
 
       <footer className="border-t border-white/5 px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs">📳</div>
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
           <span className="text-sm font-semibold">Tapfinity</span>
         </div>
         <p className="text-xs text-gray-600">© {new Date().getFullYear()} Tapfinity · Secure NFC Campus Payments</p>

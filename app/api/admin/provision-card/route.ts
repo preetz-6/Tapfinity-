@@ -50,9 +50,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  console.log("🟡 CARD PROVISION REQUEST CREATED");
-  console.log("➡️ requestId:", request.id);
-  console.log("➡️ Simulate NFC via POST /api/admin/provision-card/confirm");
 
   return NextResponse.json({
     ok: true,

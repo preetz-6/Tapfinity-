@@ -31,6 +31,7 @@ export default function ExportPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [lastDownload, setLastDownload] = useState<string | null>(null);
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/merchants")
@@ -46,7 +47,7 @@ export default function ExportPage() {
   }, [preset]);
 
   async function download() {
-    if (!startDate || !endDate) { alert("Select a date range"); return; }
+    if (!startDate || !endDate) { setExportError("Please select a date range."); return; }
     setLoading(true);
     const params = new URLSearchParams({
       startDate: new Date(startDate).toISOString(),
@@ -58,7 +59,7 @@ export default function ExportPage() {
 
     const url = `/api/admin/export?${params}`;
     window.open(url, "_blank");
-    setLastDownload(new Date().toLocaleString("en-IN"));
+    setExportError(""); setLastDownload(new Date().toLocaleString("en-IN"));
     setLoading(false);
   }
 
@@ -155,7 +156,7 @@ export default function ExportPage() {
             <p className="text-sm font-bold text-white">Ready to export</p>
             <p className="text-xs text-gray-500 mt-0.5">File will be downloaded as a CSV</p>
           </div>
-          <span className="text-2xl">📤</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </div>
 
         {/* Summary chips */}
@@ -178,7 +179,10 @@ export default function ExportPage() {
           ) : "⬇ Download CSV Report"}
         </button>
 
-        {lastDownload && (
+        {exportError && (
+        <div className="rounded-xl bg-red-500/8 border border-red-500/20 px-4 py-2.5 text-sm text-red-400 text-center">{exportError}</div>
+      )}
+      {lastDownload && (
           <p className="text-xs text-center text-gray-600">Last downloaded: {lastDownload}</p>
         )}
       </div>

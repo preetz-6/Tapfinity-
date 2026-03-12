@@ -128,10 +128,10 @@ export default function AdminDashboard() {
       <div>
         <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Users</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard label="Total"    value={users.total}   icon="👥" accent="border-white/8" />
+          <KpiCard label="Total"    value={users.total}   icon="users" accent="border-white/8" />
           <KpiCard label="Active"   value={users.active}  sub="can transact" icon="✓" accent="border-emerald-500/20" />
           <KpiCard label="Blocked"  value={users.blocked} sub="restricted"   icon="✕" accent="border-red-500/20" />
-          <KpiCard label="Wallet Pool" value={`₹${users.totalBalance.toLocaleString("en-IN")}`} sub="total balance" icon="💰" accent="border-blue-500/20" />
+          <KpiCard label="Wallet Pool" value={`₹${users.totalBalance.toLocaleString("en-IN")}`} sub="total balance" icon="wallet" accent="border-blue-500/20" />
         </div>
       </div>
 
@@ -139,9 +139,9 @@ export default function AdminDashboard() {
       <div>
         <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Merchants</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          <KpiCard label="Total"    value={merchants.total}   icon="🏪" accent="border-white/8" />
-          <KpiCard label="Active"   value={merchants.active}  sub="accepting payments" icon="⚡" accent="border-emerald-500/20" />
-          <KpiCard label="Blocked"  value={merchants.blocked} sub="suspended"           icon="🚫" accent="border-red-500/20" />
+          <KpiCard label="Total"    value={merchants.total}   icon="store" accent="border-white/8" />
+          <KpiCard label="Active"   value={merchants.active}  sub="accepting payments" icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked"  value={merchants.blocked} sub="suspended"           icon="blocked" accent="border-red-500/20" />
         </div>
       </div>
 

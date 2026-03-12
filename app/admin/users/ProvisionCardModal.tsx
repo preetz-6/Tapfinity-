@@ -123,7 +123,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
         {/* CONFIRM RELINK */}
         {status === "CONFIRM" && (
           <div className="p-7 space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl mx-auto">⚠️</div>
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
             <div className="text-center">
               <h2 className="text-lg font-bold text-white">Card Already Linked</h2>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">
@@ -155,7 +155,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
             <div className="relative w-24 h-24 mx-auto">
               <div className="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping" style={{ animationDuration: "2s" }} />
               <div className="absolute inset-2 rounded-full border-2 border-blue-500/30 animate-ping" style={{ animationDuration: "2s", animationDelay: "0.4s" }} />
-              <div className="w-full h-full rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-4xl">📳</div>
+              <div className="w-full h-full rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Hold Card to Phone</h2>
@@ -176,7 +176,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
         {/* SUCCESS */}
         {status === "SUCCESS" && (
           <div className="p-7 text-center space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center text-4xl mx-auto">✓</div>
+            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div>
               <h2 className="text-lg font-bold text-emerald-400">Card Linked!</h2>
               <p className="text-sm text-gray-500 mt-1">{user.email} can now tap to pay.</p>
@@ -192,7 +192,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
         {/* ERROR */}
         {status === "ERROR" && (
           <div className="p-7 text-center space-y-5">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center text-4xl mx-auto">✕</div>
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
             <div>
               <h2 className="text-lg font-bold text-red-400">Provisioning Failed</h2>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">{errorMsg}</p>

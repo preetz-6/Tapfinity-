@@ -9,21 +9,21 @@ type Role = "ADMIN" | "MERCHANT" | "USER";
 const ROLE_CONFIG = {
   USER: {
     label: "User",
-    icon: "👤",
+    
     accent: "from-orange-500 to-amber-600",
     ring: "ring-orange-500/40",
     border: "border-orange-500/20",
   },
   MERCHANT: {
     label: "Merchant",
-    icon: "🏪",
+    
     accent: "from-violet-500 to-indigo-600",
     ring: "ring-violet-500/40",
     border: "border-violet-500/20",
   },
   ADMIN: {
     label: "Admin",
-    icon: "⚙️",
+    
     accent: "from-blue-500 to-cyan-500",
     ring: "ring-blue-500/40",
     border: "border-blue-500/20",
@@ -95,7 +95,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${cfg.accent} shadow-2xl mb-4 transition-all duration-500`}>
-            <span className="text-2xl">📳</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Tap<span className={`bg-gradient-to-r ${cfg.accent} bg-clip-text text-transparent`}>finity</span>
