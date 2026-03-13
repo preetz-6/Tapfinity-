@@ -1,33 +1,142 @@
-import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+"use client";
 
-export default async function HomePage() {
-  const session = await getServerSession(authOptions);
-  if (session) {
-    const role = (session.user as { role?: string })?.role;
-    if (role === "ADMIN") redirect("/admin");
-    if (role === "MERCHANT") redirect("/merchant");
-    if (role === "USER") redirect("/dashboard");
-    redirect("/login");
-  }
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
+  const [contactError, setContactError] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "" });
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    const role = (session?.user as { role?: string })?.role;
+    if (role === "ADMIN") router.replace("/admin");
+    else if (role === "MERCHANT") router.replace("/merchant");
+    else if (role === "USER") router.replace("/dashboard");
+  }, [status, session, router]);
 
   return (
     <main className="min-h-screen bg-[#030508] text-white overflow-x-hidden">
 
+      {/* ── CONTACT MODAL ── */}
+      {contactOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#080f20] border border-white/10 shadow-2xl overflow-hidden">
+            <div className="px-6 pt-6 pb-4 border-b border-white/5 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white">Get in Touch</h2>
+                <p className="text-xs text-gray-500 mt-0.5">We'll reach out to set up Tapfinity for your campus</p>
+              </div>
+              <button onClick={() => { setContactOpen(false); setContactSent(false); setContactForm({ name: "", phone: "", email: "", location: "" }); }}
+                className="text-gray-600 hover:text-white text-xl leading-none transition">×</button>
+            </div>
+
+            {contactSent ? (
+              <div className="px-6 py-10 text-center space-y-3">
+                <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <p className="text-white font-semibold">Thanks, {contactForm.name.split(" ")[0]}!</p>
+                <p className="text-sm text-gray-500">We'll be in touch at {contactForm.email} shortly.</p>
+              </div>
+            ) : (
+              <div className="px-6 py-5 space-y-4">
+                {[
+                  { key: "name",     label: "Full Name",     placeholder: "Your name",           type: "text" },
+                  { key: "phone",    label: "Phone Number",  placeholder: "+91 98765 43210",      type: "tel" },
+                  { key: "email",    label: "Email",         placeholder: "you@college.edu",      type: "email" },
+                  { key: "location", label: "College / City",placeholder: "e.g. NITK Surathkal",  type: "text" },
+                ].map(({ key, label, placeholder, type }) => (
+                  <div key={key}>
+                    <p className="text-xs text-gray-500 mb-1.5">{label}</p>
+                    <input
+                      type={type}
+                      placeholder={placeholder}
+                      value={contactForm[key as keyof typeof contactForm]}
+                      onChange={e => setContactForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/30 border border-white/10 text-white text-sm placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/20 transition"
+                    />
+                  </div>
+                ))}
+
+                {contactError && (
+                  <p className="text-xs text-red-400">{contactError}</p>
+                )}
+
+                <button
+                  onClick={async () => {
+                    const { name, phone, email, location } = contactForm;
+                    if (!name.trim() || !phone.trim() || !email.trim() || !location.trim()) {
+                      setContactError("Please fill in all fields.");
+                      return;
+                    }
+                    setContactError("");
+                    setContactLoading(true);
+                    const res = await fetch("/api/contact", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ name, phone, email, location }),
+                    });
+                    const data = await res.json();
+                    setContactLoading(false);
+                    if (!res.ok) { setContactError(data.error || "Something went wrong."); return; }
+                    setContactSent(true);
+                  }}
+                  disabled={contactLoading}
+                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition active:scale-95 mt-1 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {contactLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      Sending…
+                    </>
+                  ) : "Send Message"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── NAVBAR ── */}
       <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 sm:px-10 py-4 bg-[#030508]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
-          <span className="text-lg font-bold tracking-tight">Tap<span className="text-blue-400">finity</span></span>
-        </div>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm text-gray-400 hover:text-white transition px-4 py-2">Sign in</Link>
-          <a href="#how-it-works" className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 py-2 text-sm font-semibold transition shadow-lg shadow-blue-500/20 active:scale-95">
-            Get Started
-          </a>
+          {/* Logo mark */}
+          <div className="relative w-9 h-9 flex-shrink-0">
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30" />
+            <div className="absolute inset-0 rounded-xl flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 32 32" fill="none" className="text-white">
+                <rect x="2" y="7" width="28" height="18" rx="3" stroke="currentColor" strokeWidth="2"/>
+                <path d="M21 16a5 5 0 0 1-10 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+                <path d="M6 12h3M6 20h3M23 12h3M23 20h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+              </svg>
+            </div>
+          </div>
+          <div className="leading-tight">
+            <span className="text-lg font-black tracking-tight">Tap<span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">finity</span></span>
+            <div className="flex items-center gap-1 -mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] text-emerald-400/70 font-medium tracking-wide">NFC Payments</span>
+            </div>
+          </div>
         </div>
+        <button
+          onClick={() => setContactOpen(true)}
+          className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 py-2 text-sm font-semibold transition shadow-lg shadow-blue-500/20 active:scale-95 text-white">
+          Contact Us
+        </button>
       </header>
 
       {/* ── HERO ── */}
@@ -199,12 +308,20 @@ export default async function HomePage() {
       </section>
 
       <footer className="border-t border-white/5 px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
-          <span className="text-sm font-semibold">Tapfinity</span>
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-6 h-6 flex-shrink-0">
+            <div className="absolute inset-0 rounded-md bg-gradient-to-br from-blue-500 to-indigo-600" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg width="12" height="12" viewBox="0 0 32 32" fill="none" className="text-white">
+                <rect x="2" y="7" width="28" height="18" rx="3" stroke="currentColor" strokeWidth="2.5"/>
+                <path d="M21 16a5 5 0 0 1-10 0" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+          </div>
+          <span className="text-sm font-bold">Tap<span className="text-blue-400">finity</span></span>
         </div>
         <p className="text-xs text-gray-600">© {new Date().getFullYear()} Tapfinity · Secure NFC Campus Payments</p>
-        <Link href="/login" className="text-xs text-gray-500 hover:text-white transition">Sign in →</Link>
+        <button onClick={() => setContactOpen(true)} className="text-xs text-gray-500 hover:text-white transition">Contact us →</button>
       </footer>
     </main>
   );

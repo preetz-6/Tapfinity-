@@ -227,3 +227,13 @@ enum ProvisionStatus {
   COMPLETED
   EXPIRED
 }
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String
+  location  String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

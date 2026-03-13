@@ -95,12 +95,12 @@ export default function ExportPage() {
         {preset === "custom" && (
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider">From</label>
+              <label className="text-xs text-gray-500 mb-1.5 block font-medium">From</label>
               <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
                 className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition" />
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider">To</label>
+              <label className="text-xs text-gray-500 mb-1.5 block font-medium">To</label>
               <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
                 className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition" />
             </div>
@@ -121,7 +121,7 @@ export default function ExportPage() {
         <p className="text-sm font-semibold text-white">Filters <span className="text-xs text-gray-500 font-normal">(all optional)</span></p>
 
         <div>
-          <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider">Merchant</label>
+          <label className="text-xs text-gray-500 mb-1.5 block font-medium">Merchant</label>
           <select value={merchantId} onChange={e => setMerchantId(e.target.value)}
             className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition">
             <option value="">All Merchants</option>
@@ -133,7 +133,7 @@ export default function ExportPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider">Status</label>
+            <label className="text-xs text-gray-500 mb-1.5 block font-medium">Status</label>
             <select value={status} onChange={e => setStatus(e.target.value)}
               className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition">
               <option value="">All</option>
@@ -142,7 +142,7 @@ export default function ExportPage() {
             </select>
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider">User ID</label>
+            <label className="text-xs text-gray-500 mb-1.5 block font-medium">User ID</label>
             <input placeholder="Optional" value={userId} onChange={e => setUserId(e.target.value)}
               className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition" />
           </div>

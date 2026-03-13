@@ -35,12 +35,30 @@ const ChartTooltip = ({ active, payload, label }: { active?: boolean; payload?: 
   );
 };
 
+const KPI_ICONS: Record<string, React.ReactNode> = {
+  users:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  active:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>,
+  blocked: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>,
+  wallet:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a2 2 0 0 1-4 0 2 2 0 0 1 4 0z"/></svg>,
+  store:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+};
+
+const ICON_COLORS: Record<string, string> = {
+  users:   "bg-blue-500/10 text-blue-400",
+  active:  "bg-emerald-500/10 text-emerald-400",
+  blocked: "bg-red-500/10 text-red-400",
+  wallet:  "bg-violet-500/10 text-violet-400",
+  store:   "bg-indigo-500/10 text-indigo-400",
+};
+
 function KpiCard({ label, value, sub, icon, accent }: { label: string; value: string|number; sub?: string; icon: string; accent: string }) {
   return (
     <div className={`rounded-2xl border bg-[#080f20] p-5 flex items-start gap-4 ${accent}`}>
-      <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-white/5">{icon}</div>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${ICON_COLORS[icon] ?? "bg-white/5 text-gray-400"}`}>
+        {KPI_ICONS[icon] ?? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/></svg>}
+      </div>
       <div className="min-w-0">
-        <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
+        <p className="text-xs text-gray-500 font-medium">{label}</p>
         <p className="text-2xl font-black text-white mt-0.5 truncate">{value}</p>
         {sub && <p className="text-xs text-gray-600 mt-0.5">{sub}</p>}
       </div>
@@ -128,9 +146,9 @@ export default function AdminDashboard() {
       <div>
         <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Users</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard label="Total"    value={users.total}   icon="users" accent="border-white/8" />
-          <KpiCard label="Active"   value={users.active}  sub="can transact" icon="✓" accent="border-emerald-500/20" />
-          <KpiCard label="Blocked"  value={users.blocked} sub="restricted"   icon="✕" accent="border-red-500/20" />
+          <KpiCard label="Total Users" value={users.total}   icon="users" accent="border-white/8" />
+          <KpiCard label="Active" value={users.active}  sub="can transact" icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked" value={users.blocked} sub="restricted"   icon="blocked" accent="border-red-500/20" />
           <KpiCard label="Wallet Pool" value={`₹${users.totalBalance.toLocaleString("en-IN")}`} sub="total balance" icon="wallet" accent="border-blue-500/20" />
         </div>
       </div>
@@ -139,9 +157,9 @@ export default function AdminDashboard() {
       <div>
         <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Merchants</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          <KpiCard label="Total"    value={merchants.total}   icon="store" accent="border-white/8" />
-          <KpiCard label="Active"   value={merchants.active}  sub="accepting payments" icon="active" accent="border-emerald-500/20" />
-          <KpiCard label="Blocked"  value={merchants.blocked} sub="suspended"           icon="blocked" accent="border-red-500/20" />
+          <KpiCard label="Total Merchants" value={merchants.total}   icon="store" accent="border-white/8" />
+          <KpiCard label="Active" value={merchants.active}  sub="accepting payments" icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked" value={merchants.blocked} sub="suspended"           icon="blocked" accent="border-red-500/20" />
         </div>
       </div>
 

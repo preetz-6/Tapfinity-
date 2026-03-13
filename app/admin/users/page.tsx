@@ -111,11 +111,11 @@ export default function AdminUsersPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/5 bg-white/3">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">User</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Balance</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Card</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
             </tr>
           </thead>
           <tbody>

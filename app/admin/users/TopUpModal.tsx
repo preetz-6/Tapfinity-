@@ -44,7 +44,7 @@ export default function TopUpModal({ open, userId, onClose, onSuccess }: { open:
 
           <div className="px-6 py-5 space-y-4">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Quick amounts</p>
+              <p className="text-xs text-gray-500 font-medium mb-2">Quick amounts</p>
               <div className="grid grid-cols-4 gap-2">
                 {[100, 200, 500, 1000].map(a => (
                   <button key={a} onClick={() => setAmount(String(a))}
@@ -55,7 +55,7 @@ export default function TopUpModal({ open, userId, onClose, onSuccess }: { open:
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Custom</p>
+              <p className="text-xs text-gray-500 font-medium mb-2">Custom</p>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₹</span>
                 <input type="number" placeholder="0" value={amount} onChange={e => setAmount(e.target.value)}

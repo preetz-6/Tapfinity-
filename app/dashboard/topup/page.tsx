@@ -20,7 +20,7 @@ export default function TopupPage() {
         <div className="rounded-2xl border border-white/8 bg-[#0d0a07] p-6 space-y-5">
           {/* Amount selector */}
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Select Amount</p>
+            <p className="text-xs text-gray-500 font-medium mb-3">Select Amount</p>
             <div className="grid grid-cols-3 gap-3">
               {[100, 200, 500, 1000, 2000, 5000].map(a => (
                 <button key={a} onClick={() => setSelected(a)}

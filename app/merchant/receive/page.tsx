@@ -184,7 +184,7 @@ export default function ReceivePayment() {
             </div>
             <div className="bg-[#0d1829] border border-white/10 rounded-2xl p-6 space-y-5">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Quick Select</p>
+                <p className="text-xs text-gray-500 font-medium mb-3">Quick Select</p>
                 <div className="grid grid-cols-4 gap-2">
                   {[20, 50, 100, 200].map(a => (
                     <button key={a} onClick={() => setAmount(String(a))}
@@ -199,7 +199,7 @@ export default function ReceivePayment() {
                 </div>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Custom Amount</p>
+                <p className="text-xs text-gray-500 font-medium mb-2">Custom Amount</p>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₹</span>
                   <input type="number" placeholder="0.00" value={amount}
