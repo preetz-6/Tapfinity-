@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-type Section = "pin";
+import { useState, useRef } from "react";
 
 function SectionCard({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
   return (
@@ -16,28 +14,74 @@ function SectionCard({ title, desc, children }: { title: string; desc: string; c
   );
 }
 
+// Extracted OUTSIDE — if defined inside the parent component, React
+// unmounts + remounts it on every keystroke, killing focus.
+function PinInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-gray-500 font-medium">{label}</p>
+
+      {/* Dot indicators */}
+      <div className="flex gap-2 mb-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            onClick={() => inputRef.current?.focus()}
+            className={`w-3 h-3 rounded-full border-2 transition-all duration-150 cursor-text ${
+              i < value.length
+                ? "bg-blue-500 border-blue-500 scale-110"
+                : "bg-transparent border-white/20"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Single clean input */}
+      <input
+        ref={inputRef}
+        type="password"
+        inputMode="numeric"
+        maxLength={6}
+        value={value}
+        onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
+        autoComplete="off"
+        className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white text-center tracking-[0.5em] text-base font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/30 transition"
+        placeholder="——————"
+      />
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
-  // PIN state
-  const [pin, setPin]           = useState("");
+  const [pin, setPin]               = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [pinLoading, setPinLoading] = useState(false);
-  const [pinMsg, setPinMsg]     = useState<{ ok: boolean; text: string } | null>(null);
+  const [pinMsg, setPinMsg]         = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Change PIN (requires current PIN)
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin]         = useState("");
   const [changeLoading, setChangeLoading] = useState(false);
   const [changeMsg, setChangeMsg]   = useState<{ ok: boolean; text: string } | null>(null);
 
   async function setInitialPin() {
-    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+    if (!/^\d{6}$/.test(pin)) {
       setPinMsg({ ok: false, text: "PIN must be exactly 6 digits." }); return;
     }
     if (pin !== confirmPin) {
       setPinMsg({ ok: false, text: "PINs do not match." }); return;
     }
     setPinLoading(true); setPinMsg(null);
-    const res = await fetch("/api/admin/pin", {
+    const res  = await fetch("/api/admin/pin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin }),
@@ -53,11 +97,10 @@ export default function AdminSettingsPage() {
   }
 
   async function changeExistingPin() {
-    if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+    if (!/^\d{6}$/.test(newPin)) {
       setChangeMsg({ ok: false, text: "New PIN must be exactly 6 digits." }); return;
     }
     setChangeLoading(true); setChangeMsg(null);
-    // Verify current PIN first via a dummy top-up of 0 to current user
     const verifyRes = await fetch("/api/admin/pin/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -69,7 +112,7 @@ export default function AdminSettingsPage() {
       setChangeMsg({ ok: false, text: d.error || "Current PIN incorrect." });
       return;
     }
-    const res = await fetch("/api/admin/pin", {
+    const res  = await fetch("/api/admin/pin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin: newPin }),
@@ -84,49 +127,20 @@ export default function AdminSettingsPage() {
     }
   }
 
-  function PinInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
-    return (
-      <div className="space-y-2">
-        <p className="text-xs text-gray-500">{placeholder}</p>
-        <div className="flex gap-2 items-center">
-          <div className="relative flex-1">
-            <input
-              type="password"
-              inputMode="numeric"
-              maxLength={6}
-              value={value}
-              onChange={e => onChange(e.target.value.replace(/\D/g, ""))}
-              placeholder="••••••"
-              className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-white text-center tracking-[0.5em] text-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition placeholder-gray-700"
-            />
-          </div>
-          <div className="flex gap-1.5">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className={`w-2 h-2 rounded-full border transition-all ${
-                i < value.length ? "bg-blue-500 border-blue-500" : "bg-transparent border-white/20"
-              }`} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="max-w-md space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Settings</h1>
-        <p className="text-xs text-gray-500 mt-0.5">Manage your admin PIN and preferences</p>
+        <p className="text-xs text-gray-500 mt-0.5">Manage your admin PIN</p>
       </div>
 
-      {/* Set PIN */}
       <SectionCard
         title="Set Admin PIN"
-        desc="Required for sensitive actions: provisioning cards, blocking users, and top-ups. Must be 6 digits."
+        desc="Required for provisioning cards, blocking users, and top-ups. Must be 6 digits."
       >
         <div className="space-y-4">
-          <PinInput value={pin} onChange={setPin} placeholder="New PIN" />
-          <PinInput value={confirmPin} onChange={setConfirmPin} placeholder="Confirm PIN" />
+          <PinInput label="New PIN" value={pin} onChange={setPin} />
+          <PinInput label="Confirm PIN" value={confirmPin} onChange={setConfirmPin} />
 
           {pinMsg && (
             <div className={`rounded-xl px-4 py-3 text-sm border ${
@@ -141,21 +155,28 @@ export default function AdminSettingsPage() {
           <button
             onClick={setInitialPin}
             disabled={pinLoading || pin.length !== 6 || confirmPin.length !== 6}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {pinLoading ? "Setting PIN..." : "Set PIN"}
+            {pinLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Setting PIN…
+              </>
+            ) : "Set PIN"}
           </button>
         </div>
       </SectionCard>
 
-      {/* Change PIN */}
       <SectionCard
         title="Change Existing PIN"
         desc="If you already have a PIN set and want to rotate it."
       >
         <div className="space-y-4">
-          <PinInput value={currentPin} onChange={setCurrentPin} placeholder="Current PIN" />
-          <PinInput value={newPin} onChange={setNewPin} placeholder="New PIN" />
+          <PinInput label="Current PIN" value={currentPin} onChange={setCurrentPin} />
+          <PinInput label="New PIN" value={newPin} onChange={setNewPin} />
 
           {changeMsg && (
             <div className={`rounded-xl px-4 py-3 text-sm border ${
@@ -170,17 +191,24 @@ export default function AdminSettingsPage() {
           <button
             onClick={changeExistingPin}
             disabled={changeLoading || currentPin.length !== 6 || newPin.length !== 6}
-            className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-sm transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-sm transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {changeLoading ? "Changing PIN..." : "Change PIN"}
+            {changeLoading ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Changing PIN…
+              </>
+            ) : "Change PIN"}
           </button>
         </div>
       </SectionCard>
 
-      {/* Info */}
       <div className="rounded-xl bg-blue-500/5 border border-blue-500/15 px-4 py-3">
         <p className="text-xs text-blue-400/80 leading-relaxed">
-          The PIN is hashed and stored securely. After 5 wrong attempts the PIN is locked — contact your database admin to reset it. Never share your PIN with merchants or users.
+          The PIN is hashed with bcrypt and never stored in plain text. After 5 wrong attempts it locks — reset via database if needed. Never share your PIN.
         </p>
       </div>
     </div>

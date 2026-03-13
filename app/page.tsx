@@ -24,9 +24,9 @@ export default async function HomePage() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-sm text-gray-400 hover:text-white transition px-4 py-2">Sign in</Link>
-          <Link href="/login" className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 py-2 text-sm font-semibold transition shadow-lg shadow-blue-500/20 active:scale-95">
+          <a href="#how-it-works" className="rounded-xl bg-blue-600 hover:bg-blue-500 px-5 py-2 text-sm font-semibold transition shadow-lg shadow-blue-500/20 active:scale-95">
             Get Started
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -60,7 +60,7 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/login"
             className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-4 text-sm font-bold shadow-2xl shadow-blue-500/30 hover:opacity-90 transition active:scale-95 w-full sm:w-auto text-center">
-            Launch Dashboard →
+            Sign In to Dashboard →
           </Link>
           <a href="#how-it-works"
             className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 px-8 py-4 text-sm font-semibold text-gray-300 transition w-full sm:w-auto text-center">
@@ -190,10 +190,10 @@ export default async function HomePage() {
             <div className="w-14 h-14 rounded-2xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center mx-auto mb-5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
             <h2 className="text-3xl sm:text-4xl font-black mb-4">Ready to go cashless?</h2>
             <p className="text-gray-400 mb-8 max-w-md mx-auto">Set up takes minutes. Add your admin, create users, provision cards, and start accepting payments today.</p>
-            <Link href="/login"
+            <a href="#how-it-works"
               className="inline-block rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 px-10 py-4 font-bold text-sm shadow-2xl shadow-blue-500/30 hover:opacity-90 transition active:scale-95">
-              Get Started Free →
-            </Link>
+              See How It Works →
+            </a>
           </div>
         </div>
       </section>
