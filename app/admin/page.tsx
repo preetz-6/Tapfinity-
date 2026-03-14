@@ -78,16 +78,29 @@ const FAILURE_LABELS: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData]           = useState<DashboardData | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [refreshing, setRefreshing]   = useState(false);
 
+  async function loadData(silent = false) {
+    if (silent) setRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/dashboard");
+      const d: DashboardData = await res.json();
+      setData(d);
+      setLastUpdated(new Date());
+    } catch { /* keep stale data on error */ }
+    finally { setLoading(false); setRefreshing(false); }
+  }
+
+  // Initial load
+  useEffect(() => { loadData(); }, []);
+
+  // Auto-refresh every 30 seconds silently
   useEffect(() => {
-    let active = true;
-    fetch("/api/admin/dashboard")
-      .then(r => r.json())
-      .then((d: DashboardData) => { if (active) { setData(d); setLoading(false); } })
-      .catch(() => active && setLoading(false));
-    return () => { active = false; };
+    const interval = setInterval(() => loadData(true), 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading || !data) {
@@ -115,9 +128,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-7 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-xl font-black text-white">Dashboard</h1>
-        <p className="text-xs text-gray-500 mt-0.5">Live overview of the entire platform</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black text-white">Dashboard</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {lastUpdated
+              ? `Updated ${lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · auto-refreshes every 30s`
+              : "Live overview of the entire platform"}
+          </p>
+        </div>
+        <button
+          onClick={() => loadData(true)}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/8 text-xs text-gray-400 hover:text-white hover:bg-white/10 transition disabled:opacity-50 flex-shrink-0"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            className={refreshing ? "animate-spin" : ""}>
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
       </div>
 
       {/* Failed attempts alert — show prominently if >0 */}

@@ -38,8 +38,6 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
       const payload = new TextEncoder().encode(JSON.stringify({ tpf: "1", secret }));
       const ndef    = new window.NDEFReader();
 
-      // Use mime — "text" records prepend a status byte + language code header
-      // which corrupts JSON.parse on the merchant read side
       await ndef.write({
         records: [{ recordType: "mime", mediaType: "application/json", data: payload.buffer }],
       });
@@ -84,8 +82,8 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
   // Auto-start if no existing card
   useEffect(() => {
     if (!open || !user || startedRef.current) return;
-    if (!user.hasCard) startProvisioning();
-    else setStatus("CONFIRM");
+    if (!user.hasCard) setTimeout(() => startProvisioning(), 0);
+    // CONFIRM state is already set by useState initializer for users with a card
     return cleanup;
   }, [open, user]);
 
@@ -117,12 +115,13 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-      <div className="bg-[#080f20] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-up">
+      <div className="bg-[#080f20] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
 
-        {/* CONFIRM RELINK */}
         {status === "CONFIRM" && (
           <div className="p-7 space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-400"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
             <div className="text-center">
               <h2 className="text-lg font-bold text-white">Card Already Linked</h2>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">
@@ -130,81 +129,63 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
               </p>
               <div className="mt-3 rounded-xl bg-amber-500/10 border border-amber-500/15 px-4 py-3 text-left">
                 <p className="text-xs text-amber-400 font-semibold mb-1">⚠ Warning</p>
-                <p className="text-xs text-amber-300/80 leading-relaxed">
-                  The existing card will immediately stop working. Only proceed if you are replacing a lost or damaged card.
-                </p>
+                <p className="text-xs text-amber-300/80 leading-relaxed">The existing card will immediately stop working. Only proceed if replacing a lost or damaged card.</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <button onClick={handleCancel}
-                className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-gray-400 hover:bg-white/5 transition">
-                Cancel
-              </button>
-              <button onClick={startProvisioning}
-                className="flex-1 rounded-xl bg-amber-500 hover:bg-amber-400 py-3 text-sm font-bold text-black transition active:scale-95">
-                Replace Card
-              </button>
+              <button onClick={handleCancel} className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-gray-400 hover:bg-white/5 transition">Cancel</button>
+              <button onClick={startProvisioning} className="flex-1 rounded-xl bg-amber-500 hover:bg-amber-400 py-3 text-sm font-bold text-black transition active:scale-95">Replace Card</button>
             </div>
           </div>
         )}
 
-        {/* WAITING / WRITING */}
         {status === "WAITING" && (
           <div className="p-7 text-center space-y-5">
             <div className="relative w-24 h-24 mx-auto">
               <div className="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping" style={{ animationDuration: "2s" }} />
               <div className="absolute inset-2 rounded-full border-2 border-blue-500/30 animate-ping" style={{ animationDuration: "2s", animationDelay: "0.4s" }} />
-              <div className="w-full h-full rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg></div>
+              <div className="w-full h-full rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg>
+              </div>
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Hold Card to Phone</h2>
               <p className="text-sm text-gray-500 mt-1">Writing card data…</p>
             </div>
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500 rounded-full transition-all duration-1000"
-                style={{ width: `${(secondsLeft / 20) * 100}%` }} />
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${(secondsLeft / 20) * 100}%` }} />
             </div>
             <p className="text-xs text-gray-600">{secondsLeft}s remaining</p>
-            <button onClick={handleCancel}
-              className="text-sm text-gray-600 hover:text-gray-400 underline underline-offset-2 transition">
-              Cancel
-            </button>
+            <button onClick={handleCancel} className="text-sm text-gray-600 hover:text-gray-400 underline underline-offset-2 transition">Cancel</button>
           </div>
         )}
 
-        {/* SUCCESS */}
         {status === "SUCCESS" && (
           <div className="p-7 text-center space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-500/30 flex items-center justify-center mx-auto">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
             <div>
               <h2 className="text-lg font-bold text-emerald-400">Card Linked!</h2>
               <p className="text-sm text-gray-500 mt-1">{user.email} can now tap to pay.</p>
               {user.hasCard && <p className="text-xs text-gray-600 mt-1">Previous card has been invalidated.</p>}
             </div>
-            <button onClick={onClose}
-              className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold transition active:scale-95">
-              Done
-            </button>
+            <button onClick={onClose} className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold transition active:scale-95">Done</button>
           </div>
         )}
 
-        {/* ERROR */}
         {status === "ERROR" && (
           <div className="p-7 text-center space-y-5">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center mx-auto"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center mx-auto">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
             <div>
               <h2 className="text-lg font-bold text-red-400">Provisioning Failed</h2>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">{errorMsg}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={handleCancel}
-                className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-gray-400 hover:bg-white/5 transition">
-                Close
-              </button>
-              <button onClick={() => { setStatus("WAITING"); startedRef.current = false; startProvisioning(); }}
-                className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold transition">
-                Retry
-              </button>
+              <button onClick={handleCancel} className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-gray-400 hover:bg-white/5 transition">Close</button>
+              <button onClick={() => { setStatus("WAITING"); startedRef.current = false; startProvisioning(); }} className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold transition">Retry</button>
             </div>
           </div>
         )}

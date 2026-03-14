@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/users",        label: "Users" },
   { href: "/admin/merchants",    label: "Merchants" },
   { href: "/admin/transactions", label: "Transactions" },
+  { href: "/admin/payment-logs", label: "Payment Logs" },
   { href: "/admin/export",       label: "Export & Audit" },
   { href: "/admin/settings",     label: "Settings" },
 ];

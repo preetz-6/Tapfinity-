@@ -63,6 +63,19 @@ export default function ExportPage() {
     setLoading(false);
   }
 
+  function downloadPdf() {
+    if (!startDate || !endDate) { setExportError("Please select a date range."); return; }
+    const params = new URLSearchParams({
+      startDate: new Date(startDate).toISOString(),
+      endDate: new Date(new Date(endDate).setHours(23, 59, 59)).toISOString(),
+    });
+    if (merchantId) params.append("merchantId", merchantId);
+    if (userId) params.append("userId", userId);
+    if (status) params.append("status", status);
+    window.open(`/api/admin/export/pdf?${params}`, "_blank");
+    setLastDownload(new Date().toLocaleString("en-IN"));
+  }
+
   const PRESETS: { key: Preset; label: string; icon: string }[] = [
     { key: "today", label: "Today", icon: "T" },
     { key: "week", label: "Last 7 days", icon: "7D" },
@@ -75,7 +88,7 @@ export default function ExportPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-black text-white">Export & Audit</h1>
-        <p className="text-xs text-gray-500 mt-0.5">Download filtered transaction reports as CSV</p>
+        <p className="text-xs text-gray-500 mt-0.5">Download filtered transaction reports as CSV or PDF</p>
       </div>
 
       {/* Date Presets */}
@@ -154,7 +167,7 @@ export default function ExportPage() {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm font-bold text-white">Ready to export</p>
-            <p className="text-xs text-gray-500 mt-0.5">File will be downloaded as a CSV</p>
+            <p className="text-xs text-gray-500 mt-0.5">Choose your format below</p>
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </div>
@@ -169,20 +182,31 @@ export default function ExportPage() {
           {!merchantId && !status && !userId && <Chip label="No filters — all data" muted />}
         </div>
 
-        <button onClick={download} disabled={loading || !startDate || !endDate}
-          className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 py-4 text-sm font-bold text-white transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
-          {loading ? (
-            <>
+        {/* Two download buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* CSV */}
+          <button onClick={download} disabled={loading || !startDate || !endDate}
+            className="rounded-xl bg-blue-600 hover:bg-blue-500 py-3.5 text-sm font-bold text-white transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+            {loading ? (
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              Preparing…
-            </>
-          ) : "Download CSV Report"}
-        </button>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="18"/><line x1="15" y1="15" x2="12" y2="18"/></svg>
+            )}
+            Download CSV
+          </button>
+
+          {/* PDF */}
+          <button onClick={downloadPdf} disabled={loading || !startDate || !endDate}
+            className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 py-3.5 text-sm font-bold text-white transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            Export PDF
+          </button>
+        </div>
 
         {exportError && (
-        <div className="rounded-xl bg-red-500/8 border border-red-500/20 px-4 py-2.5 text-sm text-red-400 text-center">{exportError}</div>
-      )}
-      {lastDownload && (
+          <div className="rounded-xl bg-red-500/8 border border-red-500/20 px-4 py-2.5 text-sm text-red-400 text-center">{exportError}</div>
+        )}
+        {lastDownload && (
           <p className="text-xs text-center text-gray-600">Last downloaded: {lastDownload}</p>
         )}
       </div>
