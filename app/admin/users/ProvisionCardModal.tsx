@@ -10,7 +10,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
 }) {
   const [requestId, setRequestId] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>(user?.hasCard ? "CONFIRM" : "WAITING");
-  const [secondsLeft, setSecondsLeft] = useState(20);
+  const [secondsLeft, setSecondsLeft] = useState(60);
   const [errorMsg, setErrorMsg] = useState("");
 
   const pollRef = useRef<number | null>(null);
@@ -42,6 +42,11 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
         records: [{ recordType: "mime", mediaType: "application/json", data: payload.buffer }],
       });
 
+      // Wait 600ms after write resolves to ensure data is fully flushed to card.
+      // ndef.write() can resolve before the last byte is physically committed on NTAG213.
+      // Moving the card during this window results in a blank card with a stored DB hash.
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       const res = await fetch("/api/admin/provision-card/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,7 +67,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
   async function startProvisioning() {
     startedRef.current = true;
     setStatus("WAITING");
-    setSecondsLeft(20);
+    setSecondsLeft(60);
 
     const res = await fetch("/api/admin/provision-card", {
       method: "POST",
@@ -150,10 +155,11 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Hold Card to Phone</h2>
-              <p className="text-sm text-gray-500 mt-1">Writing card data…</p>
+              <p className="text-sm text-gray-500 mt-1">Keep card still until you see success</p>
+              <p className="text-xs text-amber-400/80 mt-2">Do not move the card after it vibrates</p>
             </div>
             <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${(secondsLeft / 20) * 100}%` }} />
+              <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${(secondsLeft / 60) * 100}%` }} />
             </div>
             <p className="text-xs text-gray-600">{secondsLeft}s remaining</p>
             <button onClick={handleCancel} className="text-sm text-gray-600 hover:text-gray-400 underline underline-offset-2 transition">Cancel</button>

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     data: {
       userId,
       adminId: token.id as string,
-      expiresAt: new Date(Date.now() + 20 * 1000), // ⏱️ 20s (matches UI)
+      expiresAt: new Date(Date.now() + 60 * 1000), // 60s window
       status: "PENDING",
     },
   });
