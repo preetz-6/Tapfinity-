@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { hashCardSecret } from "@/lib/hashCardSecret";
+import { requireOrigin } from "@/lib/requireOrigin";
 
 async function getTodaySpending(tx: Prisma.TransactionClient, userId: string): Promise<number> {
   const startOfDay = new Date();
@@ -15,6 +16,10 @@ async function getTodaySpending(tx: Prisma.TransactionClient, userId: string): P
 }
 
 export async function POST(req: NextRequest) {
+  // Block cross-origin requests (CSRF protection)
+  const originError = requireOrigin(req);
+  if (originError) return originError;
+
   const ip = getClientIp(req.headers);
 
   try {
@@ -32,8 +37,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Missing requestId" }, { status: 400 });
     if (typeof cardSecret !== "string" || !cardSecret.trim())
       return NextResponse.json({ ok: false, error: "Missing cardSecret" }, { status: 400 });
-    if (requestId.length > 128 || cardSecret.length > 256)
+
+    // UUID is 36 chars — reject anything suspiciously short or long
+    if (requestId.length > 128)
       return NextResponse.json({ ok: false, error: "Invalid request parameters" }, { status: 400 });
+    if (cardSecret.length < 32 || cardSecret.length > 256)
+      return NextResponse.json({ ok: false, error: "Invalid card secret" }, { status: 400 });
 
     const secretHash = hashCardSecret(cardSecret);
 

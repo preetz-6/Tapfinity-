@@ -43,10 +43,10 @@ export default function ReceivePayment() {
     }
   }, []);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((keepAmount = false) => {
     stopScan();
     processedRef.current = false;
-    setAmount("");
+    if (!keepAmount) setAmount("");
     setRequestId(null);
     setTimeLeft(WAIT_SECONDS);
     setState("ENTER");
@@ -67,7 +67,13 @@ export default function ReceivePayment() {
         ndefRef.current = ndef;
         scanActiveRef.current = true;
 
-        await ndef.scan(); // triggers NFC permission + hardware init
+        try {
+          await ndef.scan(); // triggers NFC permission + hardware init
+        } catch {
+          // scan() throws if NFC is disabled, permission denied, or hardware unavailable
+          if (!cancelled) fail("NFC_NOT_SUPPORTED");
+          return;
+        }
         if (cancelled) return;
 
         // Scanner ready — start countdown NOW
@@ -317,7 +323,7 @@ export default function ReceivePayment() {
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold active:scale-95 transition shadow-lg shadow-violet-500/20">
                   Try Again
                 </button>
-                <button onClick={reset}
+                <button onClick={() => reset(true)}
                   className="w-full py-3 rounded-xl border border-white/10 text-gray-400 text-sm hover:bg-white/5 hover:text-white transition">
                   Change Amount
                 </button>

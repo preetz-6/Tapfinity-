@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   jwt: {
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: 60 * 60 * 24, // 1 day — must match session.maxAge
   },
 
   providers: [
