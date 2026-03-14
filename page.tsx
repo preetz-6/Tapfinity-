@@ -2,17 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
-declare global {
-  interface NDEFScanRecord { recordType: string; data?: DataView; }
-  interface NDEFReadingEvent { message: { records: NDEFScanRecord[] }; }
-  interface NDEFReader {
-    scan(): Promise<void>;
-    onreading: ((event: NDEFReadingEvent) => void) | null;
-    abort(): Promise<void>;
-  }
-  interface Window { NDEFReader: { new(): NDEFReader }; }
-}
-
 type State = "ENTER" | "PREPARING" | "WAITING" | "SUCCESS" | "FAILED";
 const WAIT_SECONDS = 20;
 

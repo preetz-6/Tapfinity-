@@ -2,17 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
-declare global {
-  interface NDEFScanRecord { recordType: string; data?: DataView; }
-  interface NDEFReadingEvent { message: { records: NDEFScanRecord[] }; }
-  interface NDEFReader {
-    scan(): Promise<void>;
-    onreading: ((event: NDEFReadingEvent) => void) | null;
-    abort(): Promise<void>;
-  }
-  interface Window { NDEFReader: { new(): NDEFReader }; }
-}
-
 type State = "ENTER" | "PREPARING" | "WAITING" | "SUCCESS" | "FAILED";
 const WAIT_SECONDS = 20;
 
@@ -94,8 +83,20 @@ export default function ReceivePayment() {
           if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
 
           try {
-            const decoded = new TextDecoder().decode(record.data);
-            const parsed  = JSON.parse(decoded);
+            let decoded: string;
+
+            if (record.recordType === "text") {
+              // Text records have a status byte + language code prefix before the payload.
+              // e.g. \x02en{"tpf":"1","secret":"..."} — must strip the header.
+              const bytes   = new Uint8Array(record.data.buffer, record.data.byteOffset, record.data.byteLength);
+              const langLen = bytes[0] & 0x3F; // lower 6 bits = language code length
+              decoded = new TextDecoder("utf-8").decode(bytes.slice(1 + langLen));
+            } else {
+              // mime/application+json — raw bytes, decode directly
+              decoded = new TextDecoder().decode(record.data);
+            }
+
+            const parsed = JSON.parse(decoded);
             if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
 
             const res = await fetch("/api/nfc/authorize", {

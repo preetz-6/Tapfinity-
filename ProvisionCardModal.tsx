@@ -2,13 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-declare global {
-  interface NDEFRecord { recordType: string; mediaType?: string; data?: ArrayBuffer | string; }
-  interface NDEFWriteOptions { records: NDEFRecord[]; }
-  interface NDEFReader { write(data: NDEFWriteOptions): Promise<void>; }
-  interface Window { NDEFReader: { new(): NDEFReader }; }
-}
-
 type ProvisionUser = { id: string; email: string; hasCard: boolean; };
 type Status = "CONFIRM" | "WAITING" | "SUCCESS" | "ERROR";
 
@@ -45,7 +38,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
       const payload = new TextEncoder().encode(JSON.stringify({ tpf: "1", secret }));
       const ndef    = new window.NDEFReader();
 
-      // Use mime — "text" records inject a status byte + language code prefix
+      // Use mime — "text" records prepend a status byte + language code header
       // which corrupts JSON.parse on the merchant read side
       await ndef.write({
         records: [{ recordType: "mime", mediaType: "application/json", data: payload.buffer }],
@@ -92,7 +85,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
   useEffect(() => {
     if (!open || !user || startedRef.current) return;
     if (!user.hasCard) startProvisioning();
-    else setStatus("CONFIRM");
+    // CONFIRM state is already set by the useState initializer for users with a card
     return cleanup;
   }, [open, user]);
 
@@ -108,7 +101,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
     return () => { if (timerRef.current !== null) clearInterval(timerRef.current); };
   }, [open, status, handleCancel]);
 
-  // Poll
+  // Poll for completion
   useEffect(() => {
     if (!open || !requestId || status !== "WAITING") return;
     pollRef.current = window.setInterval(async () => {
