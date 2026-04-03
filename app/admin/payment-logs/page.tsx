@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 
 type Merchant = { id: string; name: string; email: string };
 type LogEntry = {
@@ -185,9 +185,8 @@ export default function PaymentLogsPage() {
               </tr>
             )}
             {!loading && logs.map(log => (
-              <>
+              <Fragment key={log.id}>
                 <tr
-                  key={log.id}
                   onClick={() => setExpanded(expanded === log.id ? null : log.id)}
                   className="border-t border-white/5 hover:bg-white/3 transition-colors cursor-pointer"
                 >
@@ -277,7 +276,7 @@ export default function PaymentLogsPage() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>

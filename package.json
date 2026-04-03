@@ -12,6 +12,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^6.19.1",
+    "@upstash/redis": "^1.37.0",
     "bcrypt": "^6.0.0",
     "crypto": "^1.0.1",
     "next": "16.1.1",

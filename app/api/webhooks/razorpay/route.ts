@@ -4,15 +4,33 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("[razorpay] RAZORPAY_WEBHOOK_SECRET is not set");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
   const body = await req.text();
   const signature = req.headers.get("x-razorpay-signature");
 
+  if (!signature) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
+
   const expected = crypto
-    .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET!)
+    .createHmac("sha256", webhookSecret)
     .update(body)
     .digest("hex");
 
-  if (signature !== expected) {
+  // Timing-safe comparison prevents leaking information about the secret
+  // via response-time analysis
+  const sigBuffer = Buffer.from(signature, "hex");
+  const expBuffer = Buffer.from(expected, "hex");
+
+  if (
+    sigBuffer.length !== expBuffer.length ||
+    !crypto.timingSafeEqual(sigBuffer, expBuffer)
+  ) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 

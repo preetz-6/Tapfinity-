@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import UserShell from "./UserShell";
 import SpendChart from "./components/SpendChart";
 import MerchantChart from "./components/MerchantChart";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import Link from "next/link";
 
 type UserStatus = "ACTIVE" | "BLOCKED";
@@ -185,11 +186,15 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="rounded-2xl bg-[#080f20] border border-white/8 p-5">
             <p className="text-sm font-semibold text-white mb-4">Spending Trend</p>
-            <SpendChart />
+            <ErrorBoundary>
+              <SpendChart />
+            </ErrorBoundary>
           </div>
           <div className="rounded-2xl bg-[#080f20] border border-white/8 p-5">
             <p className="text-sm font-semibold text-white mb-4">Top Merchants</p>
-            <MerchantChart />
+            <ErrorBoundary>
+              <MerchantChart />
+            </ErrorBoundary>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { prisma } from "./prisma";
+import { rateLimit } from "./rateLimit";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -25,6 +26,10 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
+
+        // Rate limit: 5 login attempts per 60s per email
+        const allowed = await rateLimit(`login:admin:${credentials.email}`, 5, 60_000);
+        if (!allowed) throw new Error("Too many login attempts. Please wait 60 seconds.");
 
         const admin = await prisma.admin.findUnique({
           where: { email: credentials.email },
@@ -60,6 +65,10 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
+        // Rate limit: 5 login attempts per 60s per email
+        const allowed = await rateLimit(`login:merchant:${credentials.email}`, 5, 60_000);
+        if (!allowed) throw new Error("Too many login attempts. Please wait 60 seconds.");
+
         const merchant = await prisma.merchant.findUnique({
           where: { email: credentials.email },
         });
@@ -93,6 +102,10 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
+
+        // Rate limit: 5 login attempts per 60s per email
+        const allowed = await rateLimit(`login:user:${credentials.email}`, 5, 60_000);
+        if (!allowed) throw new Error("Too many login attempts. Please wait 60 seconds.");
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },

@@ -6,8 +6,13 @@ import { hashCardSecret } from "@/lib/hashCardSecret";
 import { requireOrigin } from "@/lib/requireOrigin";
 
 async function getTodaySpending(tx: Prisma.TransactionClient, userId: string): Promise<number> {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
+  // Compute start-of-day in IST (UTC+5:30) regardless of server timezone.
+  // Vercel runs in UTC — setHours(0,0,0,0) would give UTC midnight, not IST.
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST = UTC + 5:30
+  const istNow = new Date(now.getTime() + istOffset);
+  const istMidnight = new Date(Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate()));
+  const startOfDay = new Date(istMidnight.getTime() - istOffset); // convert IST midnight back to UTC
   const result = await tx.transaction.aggregate({
     where: { userId, type: "DEBIT", status: "SUCCESS", createdAt: { gte: startOfDay } },
     _sum: { amount: true },
@@ -23,7 +28,7 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req.headers);
 
   try {
-    if (!rateLimit(ip, 5, 5000)) {
+    if (!(await rateLimit(ip, 5, 5000))) {
       return NextResponse.json({ ok: false, error: "Too many attempts. Please wait." }, { status: 429 });
     }
 

@@ -6,6 +6,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
 const PIE_COLORS = ["#34d399", "#60a5fa", "#f472b6", "#a78bfa"];
 
@@ -205,22 +206,24 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">Last 7 days</span>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="txGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#60a5fa" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="day" stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
-              <YAxis stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip content={<ChartTooltip />} />
-              <Area type="monotone" dataKey="count" stroke="#60a5fa" strokeWidth={2} fill="url(#txGrad)"
-                dot={{ fill: "#60a5fa", strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5, fill: "#60a5fa" }} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <ErrorBoundary>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="txGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#60a5fa" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="day" stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} />
+                <Area type="monotone" dataKey="count" stroke="#60a5fa" strokeWidth={2} fill="url(#txGrad)"
+                  dot={{ fill: "#60a5fa", strokeWidth: 0, r: 3 }}
+                  activeDot={{ r: 5, fill: "#60a5fa" }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ErrorBoundary>
         </div>
 
         <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">

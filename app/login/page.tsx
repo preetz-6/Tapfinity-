@@ -83,7 +83,13 @@ export default function Login() {
     setLoading(false);
 
     if (res?.error) {
-      setError("Invalid email or password");
+      // "CredentialsSignin" = wrong email/password (authorize returned null)
+      // Anything else = a thrown error (e.g. rate limit message)
+      setError(
+        res.error === "CredentialsSignin"
+          ? "Invalid email or password"
+          : res.error
+      );
       return;
     }
 

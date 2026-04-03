@@ -16,7 +16,19 @@ export function requireOrigin(req: NextRequest): NextResponse | null {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!allowed || !origin.startsWith(allowed)) {
+  if (!allowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Compare parsed origins to prevent bypass via subdomains
+  // e.g. "https://tapfinity.com.evil.com" must NOT match "https://tapfinity.com"
+  try {
+    const allowedOrigin = new URL(allowed).origin;
+    const requestOrigin = new URL(origin).origin;
+    if (requestOrigin !== allowedOrigin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  } catch {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
