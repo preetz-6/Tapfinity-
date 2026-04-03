@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
-type State = "ENTER" | "PREPARING" | "WAITING" | "SUCCESS" | "FAILED";
+/* Web NFC types are not in standard TS libs — we cast at usage sites instead */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+type State = "ENTER" | "WAITING" | "SUCCESS" | "FAILED";
 const WAIT_SECONDS = 20;
 
 const FAILURE_MESSAGES: Record<string, { title: string; desc: string }> = {
@@ -28,9 +31,9 @@ export default function ReceivePayment() {
   const [timeLeft, setTimeLeft]           = useState(WAIT_SECONDS);
   const [successData, setSuccessData]     = useState<{ name?: string; balance?: number } | null>(null);
 
-  const processedRef  = useRef(false);
-  const scanActiveRef = useRef(false);
-  const ndefRef       = useRef<NDEFReader | null>(null);
+  const nfcStartedRef   = useRef(false);
+  const nfcProcessedRef = useRef(false);
+  const ndefRef         = useRef<NDEFReader | null>(null);
 
   const fail = useCallback((reason: string) => {
     setFailureReason(reason);
@@ -38,17 +41,17 @@ export default function ReceivePayment() {
   }, []);
 
   const stopScan = useCallback(() => {
-    scanActiveRef.current = false;
     if (ndefRef.current) {
       ndefRef.current.onreading = null;
-      ndefRef.current.abort().catch(() => {});
+      ndefRef.current.onreadingerror = null;
       ndefRef.current = null;
     }
   }, []);
 
   const reset = useCallback((keepAmount = false) => {
     stopScan();
-    processedRef.current = false;
+    nfcStartedRef.current = false;
+    nfcProcessedRef.current = false;
     if (!keepAmount) setAmount("");
     setRequestId(null);
     setTimeLeft(WAIT_SECONDS);
@@ -57,124 +60,12 @@ export default function ReceivePayment() {
     setSuccessData(null);
   }, [stopScan]);
 
-  // Start NFC scan after request is created
-  useEffect(() => {
-    if (state !== "PREPARING" || !requestId) return;
-    let cancelled = false;
-
-    async function initScan() {
-      if (!("NDEFReader" in window)) { fail("NFC_NOT_SUPPORTED"); return; }
-      try {
-        stopScan();
-        const ndef = new window.NDEFReader();
-        ndefRef.current = ndef;
-        scanActiveRef.current = true;
-
-        try {
-          await ndef.scan(); // triggers NFC permission + hardware init
-        } catch (scanErr: unknown) {
-          // Differentiate between NFC disabled, permission denied, and unsupported
-          if (!cancelled) {
-            const errName = scanErr instanceof DOMException ? scanErr.name : "";
-            if (errName === "NotAllowedError") {
-              fail("NFC_PERMISSION_DENIED");
-            } else if (errName === "NotReadableError" || errName === "NotSupportedError") {
-              fail("NFC_DISABLED");
-            } else {
-              fail("NFC_NOT_SUPPORTED");
-            }
-          }
-          return;
-        }
-        if (cancelled) return;
-
-        // Scanner ready — start countdown NOW
-        setState("WAITING");
-        setTimeLeft(WAIT_SECONDS);
-
-        // Fires when a card is tapped but has no NDEF data or data is corrupt.
-        // Without this, the phone vibrates but nothing happens — silent timeout.
-        ndef.onreadingerror = () => {
-          if (processedRef.current || !scanActiveRef.current) return;
-          processedRef.current = true;
-          stopScan();
-          fail("NFC_READ_ERROR");
-        };
-
-        ndef.onreading = async (event) => {
-          if (processedRef.current || !scanActiveRef.current) return;
-          processedRef.current = true;
-          stopScan();
-
-          const record = event.message.records[0];
-          if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
-
-          try {
-            let decoded: string;
-
-            if (record.recordType === "text") {
-              // Text records have a status byte + language code prefix before the payload.
-              // e.g. \x02en{"tpf":"1","secret":"..."} — must strip the header.
-              const bytes   = new Uint8Array(record.data.buffer, record.data.byteOffset, record.data.byteLength);
-              const langLen = bytes[0] & 0x3F; // lower 6 bits = language code length
-              decoded = new TextDecoder("utf-8").decode(bytes.slice(1 + langLen));
-            } else {
-              // mime/application+json — raw bytes, decode directly
-              decoded = new TextDecoder().decode(record.data);
-            }
-
-            const parsed = JSON.parse(decoded);
-            if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
-
-            const res = await fetch("/api/nfc/authorize", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ requestId, cardSecret: parsed.secret }),
-            });
-            const result = await res.json();
-
-            if (result.ok) {
-              setSuccessData({ name: result.user?.name, balance: result.balance });
-              setState("SUCCESS");
-            } else {
-              fail(result.error || "DEFAULT");
-            }
-          } catch {
-            fail("DEFAULT");
-          }
-        };
-      } catch {
-        if (!cancelled) fail("DEFAULT");
-      }
-    }
-
-    initScan();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, requestId]);
-
-  // Countdown
-  useEffect(() => {
-    if (state !== "WAITING") return;
-    if (timeLeft <= 0) { fail("TIMEOUT"); return; }
-    const t = setTimeout(() => setTimeLeft(v => v - 1), 1000);
-    return () => clearTimeout(t);
-  }, [state, timeLeft, fail]);
-
-  // Auto-reset after success
-  useEffect(() => {
-    if (state !== "SUCCESS") return;
-    const t = setTimeout(reset, 5000);
-    return () => clearTimeout(t);
-  }, [state, reset]);
-
-  // Cleanup on unmount
-  useEffect(() => () => stopScan(), [stopScan]);
-
+  /* ── Create payment request & go to WAITING ── */
   async function createRequest() {
     if (!amount || Number(amount) <= 0) return;
-    processedRef.current = false;
-    setState("PREPARING");
+    nfcStartedRef.current = false;
+    nfcProcessedRef.current = false;
+
     const res = await fetch("/api/merchant/payment-request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -182,8 +73,125 @@ export default function ReceivePayment() {
     });
     const data = await res.json();
     if (!data.ok) { fail(data.error || "DEFAULT"); return; }
+
     setRequestId(data.requestId);
+    setTimeLeft(WAIT_SECONDS);
+    setState("WAITING");
   }
+
+  /* ── Start NFC scan (fires AFTER state is already WAITING) ── */
+  async function startNfcReader(reqId: string) {
+    if (!("NDEFReader" in window)) {
+      fail("NFC_NOT_SUPPORTED");
+      return;
+    }
+
+    try {
+      const NFC = (window as any).NDEFReader;
+      const ndef = new NFC();
+      ndefRef.current = ndef;
+
+      try {
+        await ndef.scan();
+      } catch (scanErr: unknown) {
+        const errName = scanErr instanceof DOMException ? scanErr.name : "";
+        if (errName === "NotAllowedError") fail("NFC_PERMISSION_DENIED");
+        else if (errName === "NotReadableError" || errName === "NotSupportedError") fail("NFC_DISABLED");
+        else fail("NFC_NOT_SUPPORTED");
+        return;
+      }
+
+      // Card tapped but no readable NDEF data
+      ndef.onreadingerror = () => {
+        if (nfcProcessedRef.current) return;
+        nfcProcessedRef.current = true;
+        stopScan();
+        fail("NFC_READ_ERROR");
+      };
+
+      // Card read successfully
+      ndef.onreading = async (event: any) => {
+        if (nfcProcessedRef.current) return;
+        nfcProcessedRef.current = true;
+
+        const record = event.message.records[0];
+        if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
+
+        try {
+          const decoded = new TextDecoder().decode(record.data);
+          const parsed = JSON.parse(decoded);
+
+          if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
+
+          const res = await fetch("/api/nfc/authorize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requestId: reqId, cardSecret: parsed.secret }),
+          });
+          const result = await res.json();
+
+          if (result.ok) {
+            setSuccessData({ name: result.user?.name, balance: result.balance });
+            setState("SUCCESS");
+          } else {
+            fail(result.error || "DEFAULT");
+          }
+        } catch {
+          fail("DEFAULT");
+        }
+
+        stopScan();
+      };
+    } catch {
+      fail("DEFAULT");
+    }
+  }
+
+  /* ── Trigger NFC scan when state becomes WAITING (no state changes during scan) ── */
+  useEffect(() => {
+    if (state === "WAITING" && requestId && !nfcStartedRef.current) {
+      nfcStartedRef.current = true;
+      nfcProcessedRef.current = false;
+      startNfcReader(requestId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, requestId]);
+
+  /* ── Polling backup: check if request was fulfilled (safety net) ── */
+  useEffect(() => {
+    if (!requestId || state !== "WAITING") return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/merchant/payment-request/${requestId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === "USED" && !nfcProcessedRef.current) {
+          nfcProcessedRef.current = true;
+          stopScan();
+          setState("SUCCESS");
+        }
+      } catch { /* ignore polling errors */ }
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [requestId, state, stopScan]);
+
+  /* ── Countdown ── */
+  useEffect(() => {
+    if (state !== "WAITING") return;
+    if (timeLeft <= 0) { fail("TIMEOUT"); return; }
+    const t = setTimeout(() => setTimeLeft(v => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [state, timeLeft, fail]);
+
+  /* ── Auto-reset after success ── */
+  useEffect(() => {
+    if (state !== "SUCCESS") return;
+    const t = setTimeout(reset, 5000);
+    return () => clearTimeout(t);
+  }, [state, reset]);
+
+  /* ── Cleanup on unmount ── */
+  useEffect(() => () => stopScan(), [stopScan]);
 
   async function cancelRequest() {
     stopScan();
@@ -193,6 +201,8 @@ export default function ReceivePayment() {
 
   const progressPercent = (timeLeft / WAIT_SECONDS) * 100;
   const failure = FAILURE_MESSAGES[failureReason] ?? FAILURE_MESSAGES["DEFAULT"];
+
+
 
   return (
     <div className="min-h-[calc(100vh-60px)] lg:min-h-screen flex items-center justify-center px-4 py-8">
@@ -243,24 +253,6 @@ export default function ReceivePayment() {
           </div>
         )}
 
-        {/* PREPARING */}
-        {state === "PREPARING" && (
-          <div className="text-center">
-            <div className="bg-[#0d1829] border border-white/10 rounded-2xl p-8 space-y-6">
-              <div className="w-16 h-16 mx-auto rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400 animate-spin" style={{ animationDuration: "1.5s" }}>
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-white font-semibold">Starting NFC scanner...</p>
-                <p className="text-sm text-gray-500 mt-1">Allow NFC permission if prompted</p>
-              </div>
-              <p className="text-2xl font-bold text-violet-400">₹{amount}</p>
-              <button onClick={cancelRequest} className="text-sm text-gray-600 hover:text-gray-400 underline underline-offset-2 transition">Cancel</button>
-            </div>
-          </div>
-        )}
 
         {/* WAITING */}
         {state === "WAITING" && (
@@ -340,7 +332,7 @@ export default function ReceivePayment() {
                 <span className="text-xs text-red-400/70 font-mono">{failureReason}</span>
               </div>
               <div className="space-y-2 pt-1">
-                <button onClick={() => { processedRef.current = false; setState("ENTER"); setFailureReason("DEFAULT"); }}
+                <button onClick={() => { nfcProcessedRef.current = false; nfcStartedRef.current = false; setState("ENTER"); setFailureReason("DEFAULT"); }}
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold active:scale-95 transition shadow-lg shadow-violet-500/20">
                   Try Again
                 </button>
