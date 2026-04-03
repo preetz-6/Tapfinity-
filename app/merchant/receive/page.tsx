@@ -13,7 +13,10 @@ const FAILURE_MESSAGES: Record<string, { title: string; desc: string }> = {
   "Too many attempts. Please wait.": { title: "Too Many Attempts",     desc: "Wait a few seconds before trying again." },
   "TIMEOUT":                         { title: "Timed Out",             desc: "No card was tapped in time." },
   "DAILY_LIMIT_EXCEEDED":            { title: "Daily Limit Reached",   desc: "The customer has hit their daily spending limit." },
-  "NFC_NOT_SUPPORTED":               { title: "NFC Not Available",     desc: "Web NFC is only supported on Android Chrome." },
+  "NFC_NOT_SUPPORTED":               { title: "NFC Not Available",     desc: "Web NFC is only supported on Android Chrome. Make sure you're using Chrome, not a WebView or in-app browser." },
+  "NFC_DISABLED":                    { title: "NFC is Turned Off",     desc: "Enable NFC in your phone's Settings → Connected devices → Connection preferences → NFC." },
+  "NFC_PERMISSION_DENIED":           { title: "NFC Permission Denied", desc: "You denied the NFC permission. Tap Try Again and allow NFC access when prompted." },
+  "NFC_READ_ERROR":                  { title: "Card Not Readable",     desc: "The card was detected but couldn't be read. Make sure the card has been provisioned by an admin. Hold it steady for 1-2 seconds." },
   "DEFAULT":                         { title: "Payment Failed",        desc: "Something went wrong processing this payment." },
 };
 
@@ -69,9 +72,18 @@ export default function ReceivePayment() {
 
         try {
           await ndef.scan(); // triggers NFC permission + hardware init
-        } catch {
-          // scan() throws if NFC is disabled, permission denied, or hardware unavailable
-          if (!cancelled) fail("NFC_NOT_SUPPORTED");
+        } catch (scanErr: unknown) {
+          // Differentiate between NFC disabled, permission denied, and unsupported
+          if (!cancelled) {
+            const errName = scanErr instanceof DOMException ? scanErr.name : "";
+            if (errName === "NotAllowedError") {
+              fail("NFC_PERMISSION_DENIED");
+            } else if (errName === "NotReadableError" || errName === "NotSupportedError") {
+              fail("NFC_DISABLED");
+            } else {
+              fail("NFC_NOT_SUPPORTED");
+            }
+          }
           return;
         }
         if (cancelled) return;
@@ -79,6 +91,15 @@ export default function ReceivePayment() {
         // Scanner ready — start countdown NOW
         setState("WAITING");
         setTimeLeft(WAIT_SECONDS);
+
+        // Fires when a card is tapped but has no NDEF data or data is corrupt.
+        // Without this, the phone vibrates but nothing happens — silent timeout.
+        ndef.onreadingerror = () => {
+          if (processedRef.current || !scanActiveRef.current) return;
+          processedRef.current = true;
+          stopScan();
+          fail("NFC_READ_ERROR");
+        };
 
         ndef.onreading = async (event) => {
           if (processedRef.current || !scanActiveRef.current) return;
