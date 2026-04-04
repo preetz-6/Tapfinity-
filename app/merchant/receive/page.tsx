@@ -5,7 +5,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 /* Web NFC types are not in standard TS libs — we cast at usage sites instead */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type State = "ENTER" | "WAITING" | "SUCCESS" | "FAILED";
+type State = "ENTER" | "WAITING" | "PROCESSING" | "SUCCESS" | "FAILED";
 const WAIT_SECONDS = 20;
 
 const FAILURE_MESSAGES: Record<string, { title: string; desc: string }> = {
@@ -134,6 +134,9 @@ export default function ReceivePayment() {
           const parsed = JSON.parse(decoded);
 
           if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
+
+          // Card read — show processing UI immediately
+          setState("PROCESSING");
 
           const res = await fetch("/api/nfc/authorize", {
             method: "POST",
@@ -291,6 +294,39 @@ export default function ReceivePayment() {
                 {timeLeft}s remaining
               </p>
               <button onClick={cancelRequest} className="mt-6 text-sm text-gray-500 hover:text-gray-300 underline underline-offset-2 transition">Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {/* PROCESSING — shown after card tap while waiting for server response */}
+        {state === "PROCESSING" && (
+          <div className="text-center">
+            <div className="bg-[#0d1829] border border-violet-500/20 rounded-2xl p-8 space-y-6">
+              {/* Pulsing card icon */}
+              <div className="relative w-28 h-28 mx-auto">
+                <div className="absolute inset-0 rounded-full bg-violet-500/10 animate-pulse" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400">
+                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                    <path d="M16 12a4 4 0 0 1-8 0"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs text-violet-400/60 uppercase tracking-widest font-semibold mb-2">Card detected</p>
+                <h2 className="text-xl font-bold text-white mb-1">Processing Payment</h2>
+                <p className="text-sm text-gray-500">Verifying card and debiting wallet&hellip;</p>
+              </div>
+
+              <p className="text-3xl font-bold text-violet-400">₹{amount}</p>
+
+              {/* Animated dots */}
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
             </div>
           </div>
         )}
