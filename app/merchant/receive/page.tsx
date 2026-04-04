@@ -118,7 +118,19 @@ export default function ReceivePayment() {
         if (!record?.data) { fail("CARD_NOT_PROVISIONED"); return; }
 
         try {
-          const decoded = new TextDecoder().decode(record.data);
+          let decoded: string;
+
+          if (record.recordType === "text") {
+            // Text records include a status byte + language code prefix before the actual text.
+            // e.g. \x02en{"tpf":"1","secret":"..."} — must strip the header.
+            const bytes   = new Uint8Array(record.data.buffer, record.data.byteOffset, record.data.byteLength);
+            const langLen = bytes[0] & 0x3F; // lower 6 bits = language code length
+            decoded = new TextDecoder("utf-8").decode(bytes.slice(1 + langLen));
+          } else {
+            // mime/application+json and any other type — raw bytes, decode directly
+            decoded = new TextDecoder().decode(record.data);
+          }
+
           const parsed = JSON.parse(decoded);
 
           if (!parsed.secret) { fail("CARD_NOT_PROVISIONED"); return; }
@@ -332,7 +344,7 @@ export default function ReceivePayment() {
                 <span className="text-xs text-red-400/70 font-mono">{failureReason}</span>
               </div>
               <div className="space-y-2 pt-1">
-                <button onClick={() => { nfcProcessedRef.current = false; nfcStartedRef.current = false; setState("ENTER"); setFailureReason("DEFAULT"); }}
+                <button onClick={async () => { if (requestId) await fetch(`/api/merchant/payment-request/${requestId}`, { method: "DELETE" }).catch(() => {}); nfcProcessedRef.current = false; nfcStartedRef.current = false; setRequestId(null); setState("ENTER"); setFailureReason("DEFAULT"); }}
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold active:scale-95 transition shadow-lg shadow-violet-500/20">
                   Try Again
                 </button>

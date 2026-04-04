@@ -33,7 +33,7 @@ export default function HomePage() {
             <div className="px-6 pt-6 pb-4 border-b border-white/5 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-white">Get in Touch</h2>
-                <p className="text-xs text-gray-500 mt-0.5">We'll reach out to set up Tapfinity for your campus</p>
+                <p className="text-xs text-gray-500 mt-0.5">We&apos;ll reach out to set up Tapfinity for your campus</p>
               </div>
               <button onClick={() => { setContactOpen(false); setContactSent(false); setContactForm({ name: "", phone: "", email: "", location: "" }); }}
                 className="text-gray-600 hover:text-white text-xl leading-none transition">×</button>
@@ -45,7 +45,7 @@ export default function HomePage() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <p className="text-white font-semibold">Thanks, {contactForm.name.split(" ")[0]}!</p>
-                <p className="text-sm text-gray-500">We'll be in touch at {contactForm.email} shortly.</p>
+                <p className="text-sm text-gray-500">We&apos;ll be in touch at {contactForm.email} shortly.</p>
               </div>
             ) : (
               <div className="px-6 py-5 space-y-4">

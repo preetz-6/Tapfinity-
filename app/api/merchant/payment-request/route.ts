@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     prisma.paymentRequest.updateMany({
       where: { merchantId, status: "PENDING", expiresAt: { lt: new Date() } },
       data:  { status: "EXPIRED" },
-    }).catch(() => {});
+    }).catch((e) => { console.warn("[payment-request] cleanup error:", e); });
 
     const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
 

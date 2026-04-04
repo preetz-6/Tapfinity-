@@ -64,6 +64,7 @@ export default function PaymentLogsPage() {
     setLoading(false);
   }, [page, status, merchantId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetching pattern
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
@@ -72,8 +73,8 @@ export default function PaymentLogsPage() {
       .then(d => setMerchants(d.merchants || []));
   }, []);
 
-  // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [status, merchantId]);
+  function handleStatusChange(s: string) { setStatus(s); setPage(1); }
+  function handleMerchantChange(m: string) { setMerchantId(m); setPage(1); }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -135,7 +136,7 @@ export default function PaymentLogsPage() {
         {/* Status filter */}
         <div className="flex gap-1 p-1 rounded-xl bg-white/5 border border-white/5">
           {(["", "SUCCESS", "FAILED"] as const).map(s => (
-            <button key={s} onClick={() => setStatus(s)}
+            <button key={s} onClick={() => handleStatusChange(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                 status === s
                   ? s === "SUCCESS" ? "bg-emerald-500/20 text-emerald-300"
@@ -149,7 +150,7 @@ export default function PaymentLogsPage() {
         </div>
 
         {/* Merchant filter */}
-        <select value={merchantId} onChange={e => setMerchantId(e.target.value)}
+        <select value={merchantId} onChange={e => handleMerchantChange(e.target.value)}
           className="rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
           <option value="">All Merchants</option>
           {merchants.map(m => (
@@ -158,7 +159,7 @@ export default function PaymentLogsPage() {
         </select>
 
         {(status || merchantId) && (
-          <button onClick={() => { setStatus(""); setMerchantId(""); }}
+          <button onClick={() => { handleStatusChange(""); handleMerchantChange(""); }}
             className="text-xs text-gray-500 hover:text-white transition underline underline-offset-2">
             Clear filters
           </button>

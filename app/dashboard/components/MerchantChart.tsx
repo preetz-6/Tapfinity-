@@ -17,11 +17,7 @@ type Tx = {
 
 export default function MerchantChart() {
   const [data, setData] = useState<{ merchant: string; amount: number }[]>([]);
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
-
     fetch("/api/user/transactions")
       .then(r => r.json())
       .then((data: { transactions: Tx[] }) => {
@@ -45,7 +41,7 @@ export default function MerchantChart() {
       });
   }, []);
 
-  if (!mounted) return null;
+  if (data.length === 0) return null;
 
   return (
     <div className="rounded-xl bg-white/5 border border-white/10 p-4">

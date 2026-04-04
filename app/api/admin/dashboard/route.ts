@@ -58,10 +58,12 @@ export async function GET(req: NextRequest) {
   `;
 
   // Ensure all 7 days are present even if no transactions
+  // Use IST to match the SQL `AT TIME ZONE 'Asia/Kolkata'`
+  const istOffset = 5.5 * 60 * 60 * 1000;
   const txByDay = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const day = d.toLocaleDateString("en-CA"); // YYYY-MM-DD in local
+    const d = new Date(Date.now() + istOffset);
+    d.setUTCDate(d.getUTCDate() - (6 - i));
+    const day = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
     const found = rawRows.find((r: DayRow) => r.day === day);
     return { day, count: found ? Number(found.count) : 0 };
   });

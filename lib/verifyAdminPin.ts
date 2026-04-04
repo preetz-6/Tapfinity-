@@ -1,47 +1,51 @@
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 const MAX_FAILED_ATTEMPTS = 5;
 
 export async function verifyAdminPin(adminId: string, pin: string) {
-  const adminPin = await prisma.adminPin.findUnique({
-    where: { adminId },
-  });
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const adminPin = await tx.adminPin.findUnique({
+      where: { adminId },
+    });
 
-  if (!adminPin || !adminPin.isActive) {
-    return { ok: false, error: "PIN not set or disabled" };
-  }
+    if (!adminPin || !adminPin.isActive) {
+      return { ok: false, error: "PIN not set or disabled" };
+    }
 
-  const isValid = await bcrypt.compare(pin, adminPin.pinHash);
+    const isValid = await bcrypt.compare(pin, adminPin.pinHash);
 
-  if (!isValid) {
-    const failed = adminPin.failedAttempts + 1;
+    if (!isValid) {
+      const failed = adminPin.failedAttempts + 1;
 
-    await prisma.adminPin.update({
+      await tx.adminPin.update({
+        where: { adminId },
+        data: {
+          failedAttempts: failed,
+          isActive: failed < MAX_FAILED_ATTEMPTS,
+        },
+      });
+
+      return {
+        ok: false,
+        error:
+          failed >= MAX_FAILED_ATTEMPTS
+            ? "PIN locked due to multiple failures"
+            : "Invalid PIN",
+      };
+    }
+
+    // reset failed attempts on success
+    await tx.adminPin.update({
       where: { adminId },
       data: {
-        failedAttempts: failed,
-        isActive: failed < MAX_FAILED_ATTEMPTS,
+        failedAttempts: 0,
+        lastUsedAt: new Date(),
       },
     });
 
-    return {
-      ok: false,
-      error:
-        failed >= MAX_FAILED_ATTEMPTS
-          ? "PIN locked due to multiple failures"
-          : "Invalid PIN",
-    };
-  }
-
-  // reset failed attempts on success
-  await prisma.adminPin.update({
-    where: { adminId },
-    data: {
-      failedAttempts: 0,
-      lastUsedAt: new Date(),
-    },
+    return { ok: true };
   });
-
-  return { ok: true };
 }
+

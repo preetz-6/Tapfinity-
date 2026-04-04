@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const secretHash = hashCardSecret(cardSecret);
 
     // Track context for failure logging (populated as we go)
-    let failureContext: {
+    const failureContext: {
       merchantId?: string;
       userId?: string;
       amount?: number;

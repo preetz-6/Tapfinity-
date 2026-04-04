@@ -3,7 +3,6 @@ import { getToken } from "next-auth/jwt";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminPin } from "@/lib/verifyAdminPin";
-import { Prisma } from "@prisma/client";
 type AdminActionType = "CREATE_USER" | "DELETE_USER" | "BLOCK_USER" | "UNBLOCK_USER" | "REASSIGN_UID" | "TOP_UP" | "CREATE_ADMIN" | "BLOCK_ADMIN" | "CREATE_MERCHANT" | "BLOCK_MERCHANT" | "UNBLOCK_MERCHANT";
 
 /* ===================== HELPERS ===================== */

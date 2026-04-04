@@ -57,7 +57,12 @@ export default function DashboardPage() {
 
       const now = new Date();
       const startOf30 = new Date(now); startOf30.setDate(now.getDate() - 30);
-      const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
+
+      // Compute IST midnight to match server-side daily limit enforcement (UTC+5:30)
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const istNow = new Date(now.getTime() + istOffset);
+      const istMidnight = new Date(Date.UTC(istNow.getUTCFullYear(), istNow.getUTCMonth(), istNow.getUTCDate()));
+      const startOfToday = new Date(istMidnight.getTime() - istOffset); // IST midnight in UTC
 
       const debits = txs.filter(tx => tx.type === "DEBIT");
       setSpent30(debits.filter(tx => new Date(tx.createdAt) >= startOf30).reduce((s, tx) => s + tx.amount, 0));

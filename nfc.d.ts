@@ -41,7 +41,6 @@ declare global {
     onreadingerror: ((event: Event) => void) | null;
     scan(options?: { signal?: AbortSignal }): Promise<void>;
     write(message: NDEFWriteMessage, options?: NDEFWriteOptions): Promise<void>;
-    abort(): Promise<void>;
   }
 
   interface Window {

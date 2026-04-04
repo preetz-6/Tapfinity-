@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 
-const MAX_FAILED_ATTEMPTS = 5;
+
 
 /* ===================== SET / ROTATE PIN ===================== */
 export async function POST(req: NextRequest) {

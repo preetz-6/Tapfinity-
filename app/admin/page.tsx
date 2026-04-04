@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [refreshing, setRefreshing]   = useState(false);
 
-  async function loadData(silent = false) {
+  const loadData = useCallback(async (silent = false) => {
     if (silent) setRefreshing(true);
     try {
       const res = await fetch("/api/admin/dashboard");
@@ -93,16 +93,16 @@ export default function AdminDashboard() {
       setLastUpdated(new Date());
     } catch { /* keep stale data on error */ }
     finally { setLoading(false); setRefreshing(false); }
-  }
+  }, []);
 
   // Initial load
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   // Auto-refresh every 30 seconds silently
   useEffect(() => {
     const interval = setInterval(() => loadData(true), 30_000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadData]);
 
   if (loading || !data) {
     return (

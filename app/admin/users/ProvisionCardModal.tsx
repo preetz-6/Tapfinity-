@@ -90,6 +90,7 @@ export default function ProvisionCardModal({ open, user, pin, onClose }: {
     if (!user.hasCard) setTimeout(() => startProvisioning(), 0);
     // CONFIRM state is already set by useState initializer for users with a card
     return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
 
   // Countdown

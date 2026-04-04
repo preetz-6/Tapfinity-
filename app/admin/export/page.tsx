@@ -24,8 +24,9 @@ function getPresetDates(p: Preset): { start: string; end: string } {
 export default function ExportPage() {
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [preset, setPreset] = useState<Preset>("week");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const initialDates = getPresetDates("week");
+  const [startDate, setStartDate] = useState(initialDates.start);
+  const [endDate, setEndDate] = useState(initialDates.end);
   const [merchantId, setMerchantId] = useState("");
   const [userId, setUserId] = useState("");
   const [status, setStatus] = useState("");
@@ -39,12 +40,13 @@ export default function ExportPage() {
       .then(d => setMerchants(d.merchants || []));
   }, []);
 
-  useEffect(() => {
-    if (preset !== "custom") {
-      const { start, end } = getPresetDates(preset);
+  function handlePreset(p: Preset) {
+    setPreset(p);
+    if (p !== "custom") {
+      const { start, end } = getPresetDates(p);
       setStartDate(start); setEndDate(end);
     }
-  }, [preset]);
+  }
 
   async function download() {
     if (!startDate || !endDate) { setExportError("Please select a date range."); return; }
@@ -96,7 +98,7 @@ export default function ExportPage() {
         <p className="text-sm font-semibold text-white">Date Range</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {PRESETS.map(p => (
-            <button key={p.key} onClick={() => setPreset(p.key)}
+            <button key={p.key} onClick={() => handlePreset(p.key)}
               className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs font-semibold transition active:scale-95 ${preset === p.key ? "bg-blue-500/15 border-blue-500/30 text-blue-300" : "bg-white/3 border-white/8 text-gray-400 hover:bg-white/8 hover:text-white"}`}>
               <span className="text-lg">{p.icon}</span>
               {p.label}
