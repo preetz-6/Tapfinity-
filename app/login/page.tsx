@@ -3,30 +3,40 @@
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Role = "ADMIN" | "MERCHANT" | "USER";
 
 const ROLE_CONFIG = {
   USER: {
-    label: "User",
-    
-    accent: "from-orange-500 to-amber-600",
-    ring: "ring-orange-500/40",
-    border: "border-orange-500/20",
+    label: "End User",
+    icon: "person",
+    accent: "from-secondary to-purple-600",
+    text: "text-secondary",
+    ring: "focus:ring-secondary/40",
+    border: "border-secondary/20 hover:border-secondary/40",
+    bgHover: "hover:bg-secondary/10",
+    activeBg: "bg-secondary/15 border-secondary/50",
   },
   MERCHANT: {
     label: "Merchant",
-    
-    accent: "from-violet-500 to-indigo-600",
-    ring: "ring-violet-500/40",
-    border: "border-violet-500/20",
+    icon: "storefront",
+    accent: "from-tertiary to-cyan-600",
+    text: "text-tertiary",
+    ring: "focus:ring-tertiary/40",
+    border: "border-tertiary/20 hover:border-tertiary/40",
+    bgHover: "hover:bg-tertiary/10",
+    activeBg: "bg-tertiary/15 border-tertiary/50",
   },
   ADMIN: {
     label: "Admin",
-    
-    accent: "from-blue-500 to-cyan-500",
-    ring: "ring-blue-500/40",
-    border: "border-blue-500/20",
+    icon: "shield_person",
+    accent: "from-primary to-blue-600",
+    text: "text-primary",
+    ring: "focus:ring-primary/40",
+    border: "border-primary/20 hover:border-primary/40",
+    bgHover: "hover:bg-primary/10",
+    activeBg: "bg-primary/15 border-primary/50",
   },
 } as const;
 
@@ -43,7 +53,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      const r = session?.user?.role;
+      const r = (session?.user as { role?: string })?.role;
       if (r === "ADMIN") router.replace("/admin");
       else if (r === "MERCHANT") router.replace("/merchant");
       else if (r === "USER") router.replace("/dashboard");
@@ -52,10 +62,10 @@ export default function Login() {
   }, [status, session, router]);
 
   if (status === "loading") return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050a18]">
-      <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24" fill="none">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <svg className="animate-spin h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
       </svg>
     </div>
   );
@@ -68,148 +78,190 @@ export default function Login() {
     setError("");
 
     const provider =
-      role === "ADMIN"
-        ? "admin-credentials"
-        : role === "MERCHANT"
-        ? "merchant-credentials"
-        : "user-credentials";
+      role === "ADMIN" ? "admin-credentials" :
+      role === "MERCHANT" ? "merchant-credentials" : "user-credentials";
 
-    const res = await signIn(provider, {
-      email,
-      password,
-      redirect: false,
-    });
+    const res = await signIn(provider, { email, password, redirect: false });
 
     setLoading(false);
 
     if (res?.error) {
-      // "CredentialsSignin" = wrong email/password (authorize returned null)
-      // Anything else = a thrown error (e.g. rate limit message)
-      setError(
-        res.error === "CredentialsSignin"
-          ? "Invalid email or password"
-          : res.error
-      );
+      setError(res.error === "CredentialsSignin" ? "Invalid email or password" : res.error);
       return;
     }
 
-    router.replace(
-      role === "ADMIN" ? "/admin" : role === "MERCHANT" ? "/merchant" : "/dashboard"
-    );
+    router.replace(role === "ADMIN" ? "/admin" : role === "MERCHANT" ? "/merchant" : "/dashboard");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050a18] relative overflow-hidden">
-      {/* Ambient blobs */}
-      <div className="absolute top-[-15%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-700/10 blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full bg-purple-700/10 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background text-on-surface font-body overflow-hidden">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-      <div className="relative w-full max-w-md px-4 py-8">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${cfg.accent} shadow-2xl mb-4 transition-all duration-500`}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a4 4 0 0 1-8 0"/></svg>
+      {/* Left Panel: Visuals & Branding (Hidden on Mobile) */}
+      <div className="hidden lg:flex flex-col justify-between p-12 relative bg-surface-container-lowest border-r border-outline-variant/20 overflow-hidden">
+        {/* Dynamic Orbs background behind text */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="orb w-[500px] h-[500px] bg-primary top-[-100px] left-[-100px] opacity-20" style={{ animationDelay: "0s" }} />
+          <div className="orb w-[400px] h-[400px] bg-tertiary bottom-[-100px] right-[-50px] opacity-[0.15]" style={{ animationDelay: "-5s" }} />
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-[80px]" />
+        </div>
+
+        <div className="relative z-10">
+          <Link href="/" className="inline-flex items-center gap-2 group cursor-pointer text-2xl font-bold tracking-tighter text-white">
+            <span className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20">
+              <span className="material-symbols-outlined text-on-primary text-xl">offline_bolt</span>
+            </span>
+            Tap<span className="text-primary">finity</span>
+          </Link>
+        </div>
+
+        <div className="relative z-10 max-w-md">
+          <div className="inline-flex items-center gap-3 bg-surface-container-high/50 px-4 py-2 rounded-full border border-outline-variant/30 mb-6 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Sovereign Architecture</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Tap<span className={`bg-gradient-to-r ${cfg.accent} bg-clip-text text-transparent`}>finity</span>
+          <h1 className="text-5xl font-black tracking-tighter leading-tight mb-6">
+            Access your <br/>
+            <span className="text-gradient">Ecosystem</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Campus Payment Platform</p>
+          <p className="text-on-surface-variant text-lg leading-relaxed">
+            Military-grade atomic transactions. No physical currency. Total operational accountability. Select your role to enter the secure environment.
+          </p>
         </div>
 
-        {/* Card */}
-        <div className={`rounded-2xl border ${cfg.border} bg-[#0a1628]/90 backdrop-blur-xl p-8 shadow-2xl transition-all duration-300`}>
+        <div className="relative z-10 flex items-center gap-4 text-sm text-on-surface-variant font-label uppercase tracking-widest">
+          <div className="flex gap-1">
+            {[...Array(3)].map((_, i) => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full bg-outline-variant" />
+            ))}
+          </div>
+          System Status: Optimal
+        </div>
+      </div>
 
-          {/* Role Selector */}
-          <div className="grid grid-cols-3 gap-2 mb-7 p-1 rounded-xl bg-black/40 border border-white/5">
-            {(["USER", "MERCHANT", "ADMIN"] as Role[]).map(r => {
-              const c = ROLE_CONFIG[r];
-              return (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => { setRole(r); setError(""); }}
-                  className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    role === r
-                      ? `bg-gradient-to-br ${c.accent} text-white shadow-lg scale-[1.02]`
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
+      {/* Right Panel: Login Form (Centered, Mobile Responsive) */}
+      <div className="flex flex-col items-center justify-center p-6 relative">
+        {/* Subtle blur for right side mobile context */}
+        <div className="absolute lg:hidden inset-0 pointer-events-none z-0">
+          <div className="orb w-[300px] h-[300px] bg-primary top-0 left-0 opacity-[0.15]" />
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-[60px]" />
+        </div>
+
+        <div className="w-full max-w-sm relative z-10">
+          
+          {/* Mobile Header (Only visible on sm/md) */}
+          <div className="lg:hidden text-center mb-10 w-full flex flex-col items-center">
+            <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-primary shadow-2xl shadow-primary/20 mb-4 transition-transform active:scale-95">
+              <span className="material-symbols-outlined text-on-primary text-3xl">offline_bolt</span>
+            </Link>
+            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Tapfinity</h1>
+            <p className="text-sm text-on-surface-variant">Access your operational environment</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">Email</label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                className={`w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white text-sm placeholder-gray-600 outline-none transition-all focus:border-white/25 focus:ring-2 ${cfg.ring}`}
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
+          <div className="mb-8 hidden lg:block">
+            <h2 className="text-3xl font-bold tracking-tight mb-2">Sign In</h2>
+            <p className="text-on-surface-variant text-sm">Welcome back. Enter your credentials to continue.</p>
+          </div>
+
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 border border-outline-variant/20 shadow-2xl shadow-black/50">
+            {/* Custom Role Selector Toggle */}
+            <div className="flex space-x-2 mb-8 bg-surface-container-highest p-1.5 rounded-2xl border border-outline-variant/30">
+              {(["USER", "MERCHANT", "ADMIN"] as Role[]).map(r => {
+                const c = ROLE_CONFIG[r];
+                const isActive = role === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => { setRole(r); setError(""); }}
+                    className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl transition-all duration-300 font-label tracking-wide text-xs uppercase
+                      ${isActive ? `bg-surface-container-high shadow-md shadow-black/20 ${c.text} ${c.activeBg}` : `text-on-surface-variant ${c.bgHover} ${c.border} border-transparent`}
+                    `}
+                  >
+                    <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}>
+                      {c.icon}
+                    </span>
+                    <span className="font-bold">{c.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">Password</label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Email Address</label>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className={`w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 pr-12 text-white text-sm placeholder-gray-600 outline-none transition-all focus:border-white/25 focus:ring-2 ${cfg.ring}`}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  type="email"
+                  placeholder="you@campus.edu"
+                  className={`w-full bg-surface-container-high border border-outline-variant/20 rounded-xl px-4 py-3.5 text-white placeholder-outline-variant outline-none transition-all ${cfg.ring} focus:bg-surface-container-highest`}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   required
-                  autoComplete="current-password"
+                  autoComplete="email"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(s => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition text-sm select-none"
-                >
-                  {showPassword ? (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  ) : (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
-                </button>
               </div>
-            </div>
 
-            {error && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
-                <span className="text-red-400 text-xs font-bold">✕</span>
-                <p className="text-red-400 text-sm">{error}</p>
+              <div>
+                <label className="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className={`w-full bg-surface-container-high border border-outline-variant/20 rounded-xl px-4 py-3.5 pr-12 text-white placeholder-outline-variant outline-none transition-all ${cfg.ring} focus:bg-surface-container-highest`}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(s => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-white transition-colors p-2"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showPassword ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
+                </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full rounded-xl bg-gradient-to-r ${cfg.accent} py-3.5 text-white font-semibold text-sm shadow-lg transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed mt-2`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Signing in…
-                </span>
-              ) : (
-                `Sign in as ${ROLE_CONFIG[role].label}`
+              {error && (
+                <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 animate-in fade-in zoom-in duration-300">
+                  <span className="material-symbols-outlined text-red-400 text-lg">error</span>
+                  <p className="text-red-400 text-sm font-medium">{error}</p>
+                </div>
               )}
-            </button>
-          </form>
-        </div>
 
-        <p className="text-center text-xs text-gray-600 mt-6">
-          Tapfinity · Secure NFC Campus Payments
-        </p>
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full bg-gradient-to-r ${cfg.accent} text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 hover:shadow-${cfg.accent.split('-')[1]}/30`}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Authenticating...
+                  </>
+                ) : (
+                  <>
+                    Sign in as {cfg.label}
+                    <span className="material-symbols-outlined text-lg">login</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+          
+          <div className="text-center mt-8 space-y-4">
+             <Link href="/" className="inline-flex items-center gap-2 text-xs font-label uppercase tracking-widest text-outline-variant hover:text-white transition-colors">
+              <span className="material-symbols-outlined justify-center text-sm">arrow_back</span>
+              Return to Homepage
+             </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
