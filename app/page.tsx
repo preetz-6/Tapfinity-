@@ -125,7 +125,7 @@ export default function HomePage() {
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl border-b border-white/5">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
+        <div className="flex justify-between items-center px-4 md:px-8 py-4 max-w-7xl mx-auto">
           <div className="text-2xl font-bold tracking-tighter text-slate-50 dark:text-white flex items-center gap-2 group cursor-pointer">
             <span className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform">
               <span className="material-symbols-outlined text-on-primary text-xl">offline_bolt</span>
@@ -133,9 +133,7 @@ export default function HomePage() {
             Tapfinity
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a className="text-slate-400 hover:text-primary transition-colors font-headline tracking-tight text-sm font-medium" href="#">Features</a>
-            <a className="text-slate-400 hover:text-primary transition-colors font-headline tracking-tight text-sm font-medium" href="#">Pricing</a>
-            <a className="text-slate-400 hover:text-primary transition-colors font-headline tracking-tight text-sm font-medium" href="#">About</a>
+            <Link className="text-slate-400 hover:text-primary transition-colors font-headline tracking-tight text-sm font-medium" href="/features">Features</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden md:block text-slate-400 hover:text-slate-100 transition-colors font-headline tracking-tight text-sm font-medium px-4 py-2 hover:bg-white/5 rounded-xl">
@@ -150,13 +148,13 @@ export default function HomePage() {
 
       <main className="relative pt-32">
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-8 pb-32 grid lg:grid-cols-2 gap-12 items-center">
+        <section className="max-w-7xl mx-auto px-4 md:px-8 pb-32 grid lg:grid-cols-2 gap-12 items-center">
           <div className="flex flex-col items-start gap-8">
             <div className="reveal inline-flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/20">
               <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
               <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Live across 12 Campuses</span>
             </div>
-            <h1 className="reveal text-6xl md:text-8xl font-black tracking-tighter leading-tight text-gradient">
+            <h1 className="reveal text-5xl md:text-8xl font-black tracking-tighter leading-tight text-gradient">
               The Future of <br />Campus Payments
             </h1>
             <p className="reveal text-on-surface-variant text-xl max-w-2xl leading-relaxed" style={{ transitionDelay: "0.1s" }}>
@@ -173,7 +171,7 @@ export default function HomePage() {
                 See how it works
               </button>
             </div>
-            <div className="reveal flex gap-8 mt-12" style={{ transitionDelay: "0.3s" }}>
+            <div className="reveal flex flex-wrap gap-6 md:gap-8 mt-12" style={{ transitionDelay: "0.3s" }}>
               <div className="flex flex-col">
                 <span className="font-label text-2xl font-bold text-tertiary">&lt; 50ms</span>
                 <span className="text-xs text-on-surface-variant uppercase tracking-widest">Latency</span>
@@ -201,7 +199,7 @@ export default function HomePage() {
 
         {/* How It Works Section */}
         <section className="bg-surface-container-low py-32 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
             <h2 className="reveal font-label text-xs uppercase tracking-[0.4em] text-primary mb-16 text-center">Protocol Workflow</h2>
             <div className="grid md:grid-cols-3 gap-16 relative">
               {/* Step 1 */}
@@ -233,7 +231,7 @@ export default function HomePage() {
         </section>
 
         {/* Features Bento Grid */}
-        <section className="py-32 max-w-7xl mx-auto px-8">
+        <section className="py-32 max-w-7xl mx-auto px-4 md:px-8">
           <h2 className="reveal text-4xl font-black mb-16 text-center">Engineered for Scale</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" id="bento-grid">
             {/* Large Card */}
@@ -284,7 +282,7 @@ export default function HomePage() {
 
         {/* Roles Breakdown */}
         <section className="py-32 bg-surface-container-lowest relative">
-          <div className="max-w-7xl mx-auto px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
               <div className="reveal">
                 <h2 className="text-4xl font-bold tracking-tight">Ecosystem Roles</h2>
@@ -363,19 +361,16 @@ export default function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-32 px-8">
+        <section className="py-32 px-4 md:px-8">
           <div className="reveal max-w-5xl mx-auto glass-card rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden border border-outline-variant/10">
             <div className="orb w-[400px] h-[400px] bg-primary top-[-200px] left-[-200px] opacity-20"></div>
             <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-8">Ready to go cashless?</h2>
             <p className="text-on-surface-variant text-lg max-w-2xl mx-auto mb-12">
               Join the growing network of universities transforming their physical currency into high-velocity digital assets.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <button onClick={() => setContactOpen(true)} className="bg-gradient-primary text-on-primary font-bold px-10 py-5 rounded-xl transition-all active:scale-95 text-lg shadow-xl shadow-primary/30 hover:neon-glow hover:-translate-y-1">
-                Get Started Today
-              </button>
-              <button onClick={() => setContactOpen(true)} className="bg-surface-container-high px-10 py-5 rounded-xl font-bold transition-all hover:bg-surface-bright text-lg hover:border hover:border-white/20">
-                Contact Sales
+                Contact Us
               </button>
             </div>
           </div>
@@ -383,7 +378,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-950 w-full py-12 px-8 relative overflow-hidden">
+      <footer className="bg-slate-950 w-full py-12 px-4 md:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="text-xl font-black text-slate-200 flex items-center gap-2">
