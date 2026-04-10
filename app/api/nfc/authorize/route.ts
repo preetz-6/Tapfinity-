@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      return NextResponse.json({ ok: false, error: reason }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "PAYMENT_FAILED", code: reason }, { status: 400 });
     }
 
   } catch (err: unknown) {

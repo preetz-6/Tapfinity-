@@ -20,9 +20,13 @@ export async function PATCH(req: NextRequest) {
 
   const { dailySpendingLimit } = await req.json();
 
-  // null = remove limit, number = set limit
-  if (dailySpendingLimit !== null && (typeof dailySpendingLimit !== "number" || dailySpendingLimit < 0)) {
-    return NextResponse.json({ error: "Invalid limit value" }, { status: 400 });
+  // null = remove limit, number = set limit (min ₹1, max ₹1,00,000)
+  if (dailySpendingLimit !== null && (
+    typeof dailySpendingLimit !== "number" ||
+    dailySpendingLimit < 1 ||
+    dailySpendingLimit > 100_000
+  )) {
+    return NextResponse.json({ error: "Limit must be between ₹1 and ₹1,00,000" }, { status: 400 });
   }
 
   const user = await prisma.user.update({

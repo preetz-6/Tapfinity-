@@ -26,6 +26,7 @@ model User {
   transactions      Transaction[]         @relation("UserTransactions")
   paymentAttempts   PaymentAttemptLog[]
   provisionRequests ProvisionCardRequest[]
+  pendingTopUps     PendingTopUp[]
 }
 
 model Admin {
@@ -236,4 +237,18 @@ model ContactSubmission {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model PendingTopUp {
+  id        String   @id @default(cuid())
+  orderId   String   @unique  // Razorpay order ID
+  userId    String
+  amount    Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
 }

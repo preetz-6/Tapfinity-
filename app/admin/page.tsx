@@ -60,7 +60,7 @@ function KpiCard({ label, value, sub, icon, accent }: { label: string; value: st
       </div>
       <div className="min-w-0">
         <p className="text-xs text-gray-500 font-medium">{label}</p>
-        <p className="text-2xl font-black text-white mt-0.5 truncate">{value}</p>
+        <p className="text-2xl font-black text-white mt-0.5 break-all leading-tight">{value}</p>
         {sub && <p className="text-xs text-gray-600 mt-0.5">{sub}</p>}
       </div>
     </div>

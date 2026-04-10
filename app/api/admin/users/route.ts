@@ -58,12 +58,19 @@ export async function GET(req: NextRequest) {
         email: true,
         balance: true,
         status: true,
-        cardSecretHash: true, // ✅ used only for UI (has card or not)
+        cardSecretHash: true, // selected internally only — stripped before response
         createdAt: true,
       },
     });
 
-    return NextResponse.json({ ok: true, users });
+    // Never expose credential hashes — map to boolean
+    const safeUsers = users.map(u => ({
+      ...u,
+      hasCard: !!u.cardSecretHash,
+      cardSecretHash: undefined,
+    }));
+
+    return NextResponse.json({ ok: true, users: safeUsers });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

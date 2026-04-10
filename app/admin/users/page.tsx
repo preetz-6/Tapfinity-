@@ -12,7 +12,7 @@ type User = {
   email: string;
   balance: number;
   status: "ACTIVE" | "BLOCKED";
-  cardSecretHash: string | null;
+  hasCard: boolean;
 };
 type PinAction = "CARD" | "BLOCK";
 
@@ -131,8 +131,8 @@ export default function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3.5 font-semibold text-white">₹{u.balance.toLocaleString("en-IN")}</td>
                 <td className="px-4 py-3.5">
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${u.cardSecretHash ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-gray-500/10 text-gray-500 border border-gray-500/20"}`}>
-                    {u.cardSecretHash ? "● Provisioned" : "○ None"}
+                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${u.hasCard ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-gray-500/10 text-gray-500 border border-gray-500/20"}`}>
+                    {u.hasCard ? "● Provisioned" : "○ None"}
                   </span>
                 </td>
                 <td className="px-4 py-3.5">
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
         }}
       />
       {cardUser && (
-        <ProvisionCardModal open user={{ id: cardUser.id, email: cardUser.email, hasCard: !!cardUser.cardSecretHash }} pin={cardPin}
+        <ProvisionCardModal open user={{ id: cardUser.id, email: cardUser.email, hasCard: cardUser.hasCard }} pin={cardPin}
           onClose={() => { setCardUser(null); setCardPin(""); fetchUsers(); }} />
       )}
       <CreateUserModal open={showCreateModal} onClose={() => setShowCreateModal(false)} onSuccess={fetchUsers} />

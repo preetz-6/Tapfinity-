@@ -149,7 +149,8 @@ export default function ReceivePayment() {
             setSuccessData({ name: result.user?.name, balance: result.balance });
             setState("SUCCESS");
           } else {
-            fail(result.error || "DEFAULT");
+            // API returns generic error + specific code separately (TAP-005)
+            fail(result.code || result.error || "DEFAULT");
           }
         } catch {
           fail("DEFAULT");
