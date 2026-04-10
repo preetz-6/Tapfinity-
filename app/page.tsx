@@ -152,7 +152,7 @@ export default function HomePage() {
           <div className="flex flex-col items-start gap-8">
             <div className="reveal inline-flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/20">
               <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-              <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Live across 12 Campuses</span>
+              <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Next-Gen Campus Payments</span>
             </div>
             <h1 className="reveal text-5xl md:text-8xl font-black tracking-tighter leading-tight text-gradient">
               The Future of <br />Campus Payments
