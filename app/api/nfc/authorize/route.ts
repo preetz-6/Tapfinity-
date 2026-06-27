@@ -5,7 +5,7 @@ import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { hashCardSecret } from "@/lib/hashCardSecret";
 import { requireOrigin } from "@/lib/requireOrigin";
 
-async function getTodaySpending(tx: Prisma.TransactionClient, userId: string): Promise<number> {
+async function getTodaySpending(tx: any, userId: string): Promise<number> {
   // Compute start-of-day in IST (UTC+5:30) regardless of server timezone.
   // Vercel runs in UTC — setHours(0,0,0,0) would give UTC midnight, not IST.
   const now = new Date();
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     } = {};
 
     try {
-      const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const result = await prisma.$transaction(async (tx: any) => {
         // 1. Verify payment request is valid FIRST
         const paymentRequest = await tx.paymentRequest.findUnique({ where: { id: requestId } });
         if (!paymentRequest || paymentRequest.status !== "PENDING" || paymentRequest.expiresAt < new Date()) {

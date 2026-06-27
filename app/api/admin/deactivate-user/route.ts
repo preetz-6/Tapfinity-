@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!user)
       return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: any) => {
       // If user had a balance, create a refund record before zeroing
       if (user.balance > 0) {
         await tx.transaction.create({

@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Never expose credential hashes — map to boolean
-    const safeUsers = users.map(u => ({
+    const safeUsers = users.map((u: any) => ({
       ...u,
       hasCard: !!u.cardSecretHash,
       cardSecretHash: undefined,

@@ -132,9 +132,7 @@ export default function HomePage() {
             </span>
             Tapfinity
           </div>
-          <div className="hidden md:flex items-center gap-8">
-            <Link className="text-slate-400 hover:text-primary transition-colors font-headline tracking-tight text-sm font-medium" href="/features">Features</Link>
-          </div>
+
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden md:block text-slate-400 hover:text-slate-100 transition-colors font-headline tracking-tight text-sm font-medium px-4 py-2 hover:bg-white/5 rounded-xl">
               Sign In
@@ -234,17 +232,6 @@ export default function HomePage() {
         <section className="py-32 max-w-7xl mx-auto px-4 md:px-8">
           <h2 className="reveal text-4xl font-black mb-16 text-center">Engineered for Scale</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" id="bento-grid">
-            {/* Large Card */}
-            <div className="stagger-item md:col-span-2 lg:col-span-2 glass-card rounded-[2rem] p-10 flex flex-col justify-between aspect-square md:aspect-auto group">
-              <div>
-                <span className="material-symbols-outlined text-4xl text-primary mb-6 transition-transform group-hover:scale-125 duration-500">security</span>
-                <h3 className="text-3xl font-bold tracking-tight mb-4 group-hover:text-primary transition-colors">Secret Hashing</h3>
-                <p className="text-on-surface-variant">Military-grade encryption ensures that every card tap is uniquely signed and cannot be replayed or spoofed by malicious actors.</p>
-              </div>
-              <div className="mt-8 bg-black/40 backdrop-blur-md border border-white/5 p-4 rounded-xl font-label text-xs text-primary/80 overflow-hidden text-ellipsis whitespace-nowrap">
-                sha256:7f83b1657ff1...[encrypted_payload_secure_node]
-              </div>
-            </div>
             {/* Tall Card */}
             <div className="stagger-item lg:row-span-2 glass-card rounded-[2rem] p-10 flex flex-col group">
               <span className="material-symbols-outlined text-4xl text-tertiary mb-6 transition-transform group-hover:rotate-12 duration-500">analytics</span>
@@ -269,6 +256,20 @@ export default function HomePage() {
               <div className="hidden md:flex gap-4">
                 <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all duration-500"><span className="material-symbols-outlined">coffee</span></div>
                 <div className="w-14 h-14 rounded-full bg-secondary/20 flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-all duration-500"><span className="material-symbols-outlined">menu_book</span></div>
+              </div>
+            </div>
+            {/* Features Card */}
+            <div className="stagger-item md:col-span-2 glass-card rounded-[2rem] p-10 flex flex-col justify-between group cursor-pointer hover:border-primary/50 transition-all hover:translate-y-[-4px]">
+              <div>
+                <span className="material-symbols-outlined text-4xl text-primary mb-6 transition-transform group-hover:scale-125 duration-500">explore</span>
+                <h3 className="text-2xl font-bold tracking-tight mb-2 group-hover:text-primary transition-colors">Explore Protocol Features</h3>
+                <p className="text-sm text-on-surface-variant">Click to view the full specification of Tapfinity's protocol features, terminal management, and ledger mechanics.</p>
+              </div>
+              <div className="mt-8 flex justify-end">
+                <Link href="/features" className="bg-gradient-primary text-on-primary font-bold px-6 py-2 rounded-xl flex items-center gap-2 group-hover:neon-glow transition-all active:scale-95 text-xs">
+                  View All Features
+                  <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform text-sm">arrow_forward</span>
+                </Link>
               </div>
             </div>
             {/* Last Card */}
@@ -385,13 +386,7 @@ export default function HomePage() {
               <span className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-xs">T</span>
               Tapfinity
             </div>
-            <div className="font-label text-xs uppercase tracking-widest text-slate-500">© 2024 Tapfinity. Obsidian Kinetic Design.</div>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8">
-            <a className="font-label text-xs uppercase tracking-widest text-slate-500 hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a className="font-label text-xs uppercase tracking-widest text-slate-500 hover:text-primary transition-colors" href="#">Terms of Service</a>
-            <a className="font-label text-xs uppercase tracking-widest text-slate-500 hover:text-primary transition-colors" href="#">Twitter</a>
-            <a className="font-label text-xs uppercase tracking-widest text-slate-500 hover:text-primary transition-colors" href="#">GitHub</a>
+            <div className="font-label text-xs uppercase tracking-widest text-slate-500">© 2026 Tapfinity.</div>
           </div>
         </div>
       </footer>

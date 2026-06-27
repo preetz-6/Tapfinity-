@@ -50,6 +50,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loadingText, setLoadingText] = useState("Authenticating...");
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -83,13 +84,13 @@ export default function Login() {
 
     const res = await signIn(provider, { email, password, redirect: false });
 
-    setLoading(false);
-
     if (res?.error) {
+      setLoading(false);
       setError(res.error === "CredentialsSignin" ? "Invalid email or password" : res.error);
       return;
     }
 
+    setLoadingText("Preparing dashboard, please wait...");
     router.replace(role === "ADMIN" ? "/admin" : role === "MERCHANT" ? "/merchant" : "/dashboard");
   }
 
@@ -124,18 +125,6 @@ export default function Login() {
             Access your <br/>
             <span className="text-gradient">Ecosystem</span>
           </h1>
-          <p className="text-on-surface-variant text-lg leading-relaxed">
-            Military-grade atomic transactions. No physical currency. Total operational accountability. Select your role to enter the secure environment.
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-4 text-sm text-on-surface-variant font-label uppercase tracking-widest">
-          <div className="flex gap-1">
-            {[...Array(3)].map((_, i) => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full bg-outline-variant" />
-            ))}
-          </div>
-          System Status: Optimal
         </div>
       </div>
 
@@ -243,7 +232,7 @@ export default function Login() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    Authenticating...
+                    {loadingText}
                   </>
                 ) : (
                   <>

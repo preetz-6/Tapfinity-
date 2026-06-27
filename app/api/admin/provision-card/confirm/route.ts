@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     const cardSecretHash = hashCardSecret(cardSecret);
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: any) => {
       // Unlink this secret from any other user (re-provisioning)
       await tx.user.updateMany({
         where: { cardSecretHash },

@@ -33,7 +33,7 @@ export async function GET(
     },
   });
 
-  const transactions = txs.map(mt => ({
+  const transactions = txs.map((mt: any) => ({
     id:        mt.tx.id,
     amount:    mt.tx.amount,
     status:    mt.tx.status,
@@ -42,8 +42,8 @@ export async function GET(
   }));
 
   const totalRevenue = transactions
-    .filter(t => t.status === "SUCCESS")
-    .reduce((s, t) => s + t.amount, 0);
+    .filter((t: any) => t.status === "SUCCESS")
+    .reduce((s: number, t: any) => s + t.amount, 0);
 
   return NextResponse.json({ merchant, transactions, totalRevenue });
 }

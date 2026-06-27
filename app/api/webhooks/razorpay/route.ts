@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
   const { userId } = pendingTopUp;
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  await prisma.$transaction(async (tx: any) => {
     await tx.user.update({
       where: { id: userId },
       data: { balance: { increment: amount } },

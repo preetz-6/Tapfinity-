@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const MAX_FAILED_ATTEMPTS = 5;
 
 export async function verifyAdminPin(adminId: string, pin: string) {
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return prisma.$transaction(async (tx: any) => {
     const adminPin = await tx.adminPin.findUnique({
       where: { adminId },
     });
