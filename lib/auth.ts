@@ -128,6 +128,44 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+
+    /* ===================== STAFF LOGIN ===================== */
+    CredentialsProvider({
+      id: "staff-credentials",
+      name: "StaffCredentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) return null;
+
+        // Rate limit: 5 login attempts per 60s per email
+        const allowed = await rateLimit(`login:staff:${credentials.email}`, 5, 60_000);
+        if (!allowed) throw new Error("Too many login attempts. Please wait 60 seconds.");
+
+        const staff = await prisma.staff.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!staff || staff.status !== "ACTIVE") return null;
+
+        const valid = await bcrypt.compare(
+          credentials.password,
+          staff.passwordHash
+        );
+
+        if (!valid) return null;
+
+        return {
+          id: staff.id,
+          email: staff.email,
+          name: staff.name,
+          role: "STAFF",
+        };
+      },
+    }),
   ],
 
   callbacks: {

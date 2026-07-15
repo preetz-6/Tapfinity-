@@ -61,7 +61,8 @@ model AdminPin {
 
 model AdminActionLog {
   id               String          @id @default(cuid())
-  adminId          String
+  adminId          String?
+  staffId          String?
   actionType       AdminActionType
   targetType       String
   targetIdentifier String
@@ -70,9 +71,11 @@ model AdminActionLog {
   userAgent        String?
   createdAt        DateTime        @default(now())
 
-  admin Admin @relation("AdminActions", fields: [adminId], references: [id])
+  admin Admin? @relation("AdminActions", fields: [adminId], references: [id])
+  staff Staff? @relation("StaffActions", fields: [staffId], references: [id])
 
   @@index([adminId])
+  @@index([staffId])
   @@index([createdAt])
 }
 
@@ -89,6 +92,33 @@ model Merchant {
   transactions    MerchantTransaction[]
   paymentRequests PaymentRequest[]
   paymentAttempts PaymentAttemptLog[]
+}
+
+model Staff {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  status       StaffStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pin     StaffPin?
+  actions AdminActionLog[] @relation("StaffActions")
+}
+
+model StaffPin {
+  id             String    @id @default(cuid())
+  staffId        String    @unique
+  pinHash        String
+  failedAttempts Int       @default(0)
+  isActive       Boolean   @default(true)
+  lastUsedAt     DateTime?
+  rotatedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
 }
 
 model MerchantTransaction {
@@ -210,6 +240,14 @@ enum AdminActionType {
   CREATE_MERCHANT
   BLOCK_MERCHANT
   UNBLOCK_MERCHANT
+  CREATE_STAFF
+  BLOCK_STAFF
+  UNBLOCK_STAFF
+}
+
+enum StaffStatus {
+  ACTIVE
+  BLOCKED
 }
 
 enum PaymentRequestStatus {

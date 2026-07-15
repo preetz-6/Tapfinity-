@@ -120,6 +120,8 @@ input[type="number"] {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(174, 198, 255, 0.1);
 }
+
+
 .neon-glow {
     box-shadow: 0 0 30px rgba(0, 218, 243, 0.3);
 }
@@ -192,4 +194,40 @@ input[type="number"] {
 }
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom interactive UI animations */
+.glow-border {
+    box-shadow: inset 0 0 12px rgba(0, 218, 243, 0.15), 0 0 20px rgba(0, 218, 243, 0.05);
+}
+
+.draw-path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    transition: stroke-dashoffset 0.8s ease-out;
+}
+
+.terminal-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+.terminal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.glow-text-emerald {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.glow-text-primary {
+    text-shadow: 0 0 10px rgba(0, 112, 243, 0.5);
+}
+
+.interactive-card {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.interactive-card:hover {
+    border-color: rgba(0, 218, 243, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 218, 243, 0.1);
 }
