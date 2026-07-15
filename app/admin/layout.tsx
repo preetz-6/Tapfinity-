@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+"use client";
 
+import { usePathname } from "next/navigation";
 import AdminShell from "./AdminShell";
 
 export default function AdminLayout({
@@ -8,5 +8,11 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
   return <AdminShell>{children}</AdminShell>;
 }

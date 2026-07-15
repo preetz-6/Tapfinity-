@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+"use client";
 
+import { usePathname } from "next/navigation";
 import MerchantShell from "./MerchantShell";
 
 export default function MerchantLayout({
@@ -8,5 +8,11 @@ export default function MerchantLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  if (pathname === "/merchant/login") {
+    return <>{children}</>;
+  }
+
   return <MerchantShell>{children}</MerchantShell>;
 }

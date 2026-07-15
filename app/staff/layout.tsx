@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+"use client";
 
+import { usePathname } from "next/navigation";
 import StaffShell from "./StaffShell";
 
 export default function StaffLayout({
@@ -8,5 +8,11 @@ export default function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  if (pathname === "/staff/login") {
+    return <>{children}</>;
+  }
+
   return <StaffShell>{children}</StaffShell>;
 }
