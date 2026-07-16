@@ -82,47 +82,47 @@ export default function StaffDashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-7 max-w-6xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-white">Student Management</h1>
-        <p className="text-xs text-gray-500 mt-0.5">{users.length} students · Block or unblock student cards</p>
+        <h1 className="text-2xl font-black tracking-tight text-white">Student Management</h1>
+        <p className="text-xs text-gray-500 mt-0.5">{users.length} students enrolled · Lock or unlock student contactless cards</p>
       </div>
 
       {/* Stats strip */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total", value: users.length, color: "text-white" },
-          { label: "Active", value: activeCount, color: "text-emerald-400" },
-          { label: "Blocked", value: users.length - activeCount, color: "text-red-400" },
+          { label: "Total Students", value: users.length, color: "text-white", bg: "from-white/[0.02]" },
+          { label: "Active Cards", value: activeCount, color: "text-emerald-400", bg: "from-emerald-500/[0.02]" },
+          { label: "Blocked Cards", value: users.length - activeCount, color: "text-red-400", bg: "from-red-500/[0.02]" },
         ].map(s => (
-          <div key={s.label} className="rounded-xl bg-white/3 border border-white/5 px-4 py-3">
-            <p className="text-xs text-gray-500">{s.label}</p>
-            <p className={`text-lg font-bold mt-0.5 ${s.color}`}>{s.value}</p>
+          <div key={s.label} className={`rounded-2xl border border-white/[0.06] bg-gradient-to-b ${s.bg} to-transparent px-5 py-4 transition-all duration-300 hover:border-white/[0.12] hover:shadow-lg`}>
+            <p className="text-xs text-gray-500 font-semibold tracking-wide">{s.label}</p>
+            <p className={`text-2xl font-black mt-1 ${s.color} tracking-tight`}>{s.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Search */}
+      {/* Search & Actions bar */}
       <div className="relative">
         <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
-          placeholder="Search by name or email…"
+          placeholder="Search students by name or email…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full sm:max-w-sm pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition"
+          className="w-full sm:max-w-sm pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-200"
         />
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden sm:block rounded-2xl border border-white/8 overflow-hidden bg-[#0c0f1a]">
+      <div className="hidden sm:block rounded-2xl border border-white/[0.06] overflow-hidden bg-[#0c0f1a] shadow-xl shadow-black/20">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5 bg-white/3">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Student</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Balance</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
+            <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Student</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Balance</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -131,33 +131,33 @@ export default function StaffDashboard() {
               <tr><td colSpan={4} className="py-16 text-center text-gray-500 text-sm">No students found</td></tr>
             )}
             {!loading && filteredUsers.map(u => (
-              <tr key={u.id} className="border-t border-white/5 hover:bg-white/3 transition-colors">
-                <td className="px-4 py-3.5">
-                  <p className="font-medium text-white">{u.name ?? "—"}</p>
+              <tr key={u.id} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                <td className="px-5 py-4">
+                  <p className="font-semibold text-white leading-normal">{u.name ?? "—"}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{u.email}</p>
                 </td>
-                <td className="px-4 py-3.5 font-semibold text-white">₹{u.balance.toLocaleString("en-IN")}</td>
-                <td className="px-4 py-3.5">
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${u.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
+                <td className="px-5 py-4 font-bold text-white tracking-tight">₹{u.balance.toLocaleString("en-IN")}</td>
+                <td className="px-5 py-4">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${u.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${u.status === "ACTIVE" ? "bg-emerald-400" : "bg-red-400"}`} />
                     {u.status}
                   </span>
                 </td>
-                <td className="px-4 py-3.5">
+                <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => { setSelectedUser(u); setPinOpen(true); }}
-                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition active:scale-95 ${
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
                         u.status === "ACTIVE"
-                          ? "bg-amber-500/15 text-amber-400 border-amber-500/20 hover:bg-amber-500/25"
-                          : "bg-emerald-500/15 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/25 hover:bg-amber-500/20"
+                          : "bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20"
                       }`}
                     >
                       {u.status === "ACTIVE" ? "Block" : "Unblock"}
                     </button>
                     <button
                       onClick={() => viewTransactions(u)}
-                      className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition active:scale-95 bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
+                      className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
                     >
                       History
                     </button>
@@ -216,7 +216,7 @@ export default function StaffDashboard() {
       </div>
 
       {/* PIN Modal for block/unblock */}
-      <PinModal open={pinOpen} loading={pinLoading} error={pinError}
+      <PinModal open={pinOpen} loading={pinLoading} error={pinError} theme="amber"
         onClose={() => { setPinOpen(false); setSelectedUser(null); setPinError(""); }}
         onSubmit={async pin => {
           if (!selectedUser) return;

@@ -14,16 +14,16 @@ function StatCard({ label, value, sub, accent, icon }: {
   label: string; value: string; sub?: string; accent: string; icon?: React.ReactNode;
 }) {
   return (
-    <div className={`rounded-2xl p-5 border ${accent} bg-[#080f20] flex items-start gap-3`}>
+    <div className={`rounded-2xl p-5 border bg-gradient-to-b from-white/[0.03] to-transparent flex items-start gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${accent}`}>
       {icon && (
-        <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 text-orange-400">
+        <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0 text-orange-400">
           {icon}
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-xs text-gray-500 font-medium mb-1">{label}</p>
-        <p className="text-2xl font-bold text-white">{value}</p>
-        {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+        <p className="text-xs text-gray-500 font-semibold mb-1 tracking-wide">{label}</p>
+        <p className="text-2xl font-black text-white tracking-tight leading-tight">{value}</p>
+        {sub && <p className="text-[11px] text-gray-500 mt-1 leading-normal">{sub}</p>}
       </div>
     </div>
   );
@@ -144,9 +144,9 @@ export default function DashboardPage() {
 
         {/* Daily limit progress — only if limit is set */}
         {!loading && dailyLimit !== null && (
-          <div className={`rounded-2xl border p-5 ${limitWarning ? "border-amber-500/25 bg-amber-500/5" : "border-white/8 bg-[#080f20]"}`}>
+          <div className={`rounded-2xl border p-5 transition-all duration-300 hover:border-white/[0.12] ${limitWarning ? "border-amber-500/25 bg-amber-500/5" : "border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent shadow-lg shadow-black/10"}`}>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-white">Daily Limit</p>
+              <p className="text-sm font-bold text-white">Daily Limit</p>
               <span className={`text-xs font-semibold ${limitWarning ? "text-amber-400" : "text-gray-400"}`}>
                 ₹{spentToday.toLocaleString("en-IN")} / ₹{dailyLimit.toLocaleString("en-IN")}
               </span>
@@ -173,30 +173,30 @@ export default function DashboardPage() {
 
         {/* Quick actions */}
         {!loading && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Link href="/dashboard/history"
-              className="rounded-2xl border border-white/8 bg-[#080f20] p-4 hover:bg-white/5 transition group">
-              <p className="text-sm font-semibold text-white">Transaction History</p>
-              <p className="text-xs text-gray-500 mt-0.5">View all payments</p>
+              className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-5 hover:bg-white/[0.04] hover:border-orange-500/20 hover:-translate-y-0.5 transition-all duration-300 group shadow-md shadow-black/10">
+              <p className="text-sm font-bold text-white group-hover:text-orange-400 transition-colors">Transaction History</p>
+              <p className="text-xs text-gray-500 mt-1">View and filter all past wallet payments</p>
             </Link>
             <Link href="/dashboard/card"
-              className="rounded-2xl border border-white/8 bg-[#080f20] p-4 hover:bg-white/5 transition group">
-              <p className="text-sm font-semibold text-white">Card & Security</p>
-              <p className="text-xs text-gray-500 mt-0.5">Block card, set limits</p>
+              className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-5 hover:bg-white/[0.04] hover:border-orange-500/20 hover:-translate-y-0.5 transition-all duration-300 group shadow-md shadow-black/10">
+              <p className="text-sm font-bold text-white group-hover:text-orange-400 transition-colors">Card & Security</p>
+              <p className="text-xs text-gray-500 mt-1">Temporarily block card, change daily spending limit</p>
             </Link>
           </div>
         )}
 
         {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="rounded-2xl bg-[#080f20] border border-white/8 p-5">
-            <p className="text-sm font-semibold text-white mb-4">Spending Trend</p>
+          <div className="rounded-2xl bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.06] p-5 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
+            <p className="text-sm font-bold text-white mb-4">Spending Trend</p>
             <ErrorBoundary>
               <SpendChart />
             </ErrorBoundary>
           </div>
-          <div className="rounded-2xl bg-[#080f20] border border-white/8 p-5">
-            <p className="text-sm font-semibold text-white mb-4">Top Merchants</p>
+          <div className="rounded-2xl bg-gradient-to-b from-white/[0.02] to-transparent border border-white/[0.06] p-5 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
+            <p className="text-sm font-bold text-white mb-4">Top Merchants</p>
             <ErrorBoundary>
               <MerchantChart />
             </ErrorBoundary>

@@ -37,7 +37,7 @@ export default function UserShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div
         className={`
-          fixed lg:static z-50 h-full
+          fixed lg:sticky top-0 z-50 h-screen
           transform transition-transform duration-300 ease-in-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0

@@ -54,14 +54,14 @@ const ICON_COLORS: Record<string, string> = {
 
 function KpiCard({ label, value, sub, icon, accent }: { label: string; value: string|number; sub?: string; icon: string; accent: string }) {
   return (
-    <div className={`rounded-2xl border bg-[#080f20] p-5 flex items-start gap-4 ${accent}`}>
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${ICON_COLORS[icon] ?? "bg-white/5 text-gray-400"}`}>
+    <div className={`rounded-2xl border bg-gradient-to-b from-white/[0.03] to-transparent p-5 flex items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${accent ?? "border-white/[0.06] hover:border-white/[0.12]"}`}>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${ICON_COLORS[icon] ?? "bg-white/5 text-gray-400"}`}>
         {KPI_ICONS[icon] ?? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/></svg>}
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-gray-500 font-medium">{label}</p>
-        <p className="text-2xl font-black text-white mt-0.5 break-all leading-tight">{value}</p>
-        {sub && <p className="text-xs text-gray-600 mt-0.5">{sub}</p>}
+        <p className="text-xs text-gray-500 font-semibold tracking-wide">{label}</p>
+        <p className="text-2xl font-black text-white mt-1 break-all leading-none tracking-tight">{value}</p>
+        {sub && <p className="text-[11px] text-gray-500 mt-1.5 leading-normal">{sub}</p>}
       </div>
     </div>
   );
@@ -198,13 +198,13 @@ export default function AdminDashboard() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl border border-white/8 bg-[#080f20] p-6">
+        <div className="lg:col-span-2 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="font-bold text-white">Transaction Volume</p>
               <p className="text-xs text-gray-500 mt-0.5">{totalTx} transactions in last 7 days</p>
             </div>
-            <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">Last 7 days</span>
+            <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1 font-semibold">Last 7 days</span>
           </div>
           <ErrorBoundary>
             <ResponsiveContainer width="100%" height={220}>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
           </ErrorBoundary>
         </div>
 
-        <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <p className="font-bold text-white mb-1">Credit vs Debit</p>
           <p className="text-xs text-gray-500 mb-3">All-time split</p>
           <ResponsiveContainer width="100%" height={180}>
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
               <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={72} paddingAngle={4} strokeWidth={0}>
                 {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
-              <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs text-gray-400">{v}</span>} />
+              <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs text-gray-400 font-medium">{v}</span>} />
               <Tooltip
                 formatter={(v: number | undefined) => [v ?? 0, "transactions"]}
                 contentStyle={{ background: "#0b1226", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
@@ -242,29 +242,29 @@ export default function AdminDashboard() {
             </PieChart>
           </ResponsiveContainer>
         </div>
-      </div>
 
-      {/* Bar chart */}
-      <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">
-        <p className="font-bold text-white mb-1">Daily Breakdown</p>
-        <p className="text-xs text-gray-500 mb-5">Transaction count per day</p>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={chartData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }} barSize={28}>
-            <XAxis dataKey="day" stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
-            <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
-            <Bar dataKey="count" radius={[6,6,0,0]}>
-              {chartData.map((_, i) => <Cell key={i} fill={`hsl(${230 + i * 8}, 70%, ${50 + i * 3}%)`} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {/* Bar chart */}
+        <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
+          <p className="font-bold text-white mb-1">Daily Breakdown</p>
+          <p className="text-xs text-gray-500 mb-5">Transaction count per day</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={chartData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }} barSize={28}>
+              <XAxis dataKey="day" stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
+              <YAxis stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+              <Bar dataKey="count" radius={[6,6,0,0]}>
+                {chartData.map((_, i) => <Cell key={i} fill={`hsl(${230 + i * 8}, 70%, ${50 + i * 3}%)`} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Recent activity + failed attempts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Recent Transactions */}
-        <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <p className="font-bold text-white mb-4">Recent Transactions</p>
           <div className="space-y-0">
             {recentTransactions.length === 0 && <p className="text-sm text-gray-500">No transactions yet</p>}
@@ -285,13 +285,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Admin Actions */}
-        <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <p className="font-bold text-white mb-4">Admin Actions</p>
           <div className="space-y-0">
             {recentActions.length === 0 && <p className="text-sm text-gray-500">No actions yet</p>}
             {recentActions.slice(0, 6).map(a => (
               <div key={a.id} className="flex items-start gap-2.5 py-2.5 border-b border-white/5 last:border-0">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight">{a.actionType.replace(/_/g, " ")}</p>
                   <p className="text-xs text-gray-600 truncate mt-0.5">{a.targetIdentifier}</p>
@@ -302,14 +302,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Failed attempts panel */}
-        <div className="rounded-2xl border border-white/8 bg-[#080f20] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <div className="flex items-center justify-between mb-4">
             <p className="font-bold text-white">Failed Attempts</p>
-            <span className="text-xs text-gray-600">last 24h</span>
+            <span className="text-xs text-gray-500 font-medium">last 24h</span>
           </div>
           {failedAttempts.total === 0 ? (
             <div className="text-center py-6">
-              <p className="text-2xl mb-1">✓</p>
+              <p className="text-2xl mb-1 text-emerald-400">✓</p>
               <p className="text-xs text-gray-500">No failures today</p>
             </div>
           ) : (
@@ -329,7 +329,6 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
-
     </div>
   );
 }
