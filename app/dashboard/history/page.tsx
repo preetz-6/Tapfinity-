@@ -60,7 +60,7 @@ export default function HistoryPage() {
 
   return (
     <UserShell>
-      <div className="max-w-2xl mx-auto space-y-5">
+      <div className="space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-lg">≡</div>
           <div>

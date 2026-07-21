@@ -78,14 +78,14 @@ export default function DashboardPage() {
 
   return (
     <UserShell>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="space-y-6">
 
         {/* Header */}
         <div>
-          <h1 className="text-xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-white">
             {name ? `Hello, ${name.split(" ")[0]}` : "Wallet Overview"}
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">Your Tapfinity balance and activity</p>
+          <p className="text-s text-gray-5000 mt-0.5">Welcome back</p>
         </div>
 
         {/* Status alerts */}
@@ -114,29 +114,29 @@ export default function DashboardPage() {
               <StatCard
                 label="Balance"
                 value={`₹${balance.toLocaleString("en-IN")}`}
-                sub="Available to spend"
+                sub="Available"
                 accent="border-orange-500/20"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a2 2 0 0 1-4 0 2 2 0 0 1 4 0z"/></svg>}
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M16 12a2 2 0 0 1-4 0 2 2 0 0 1 4 0z" /></svg>}
               />
               <StatCard
                 label="Card"
                 value={hasCard ? status : "Not linked"}
                 sub={
                   !hasCard ? "Contact admin" :
-                  status === "ACTIVE" ? "Ready to tap" : "Contact admin"
+                    status === "ACTIVE" ? "Ready to tap" : "Contact admin"
                 }
                 accent={
                   !hasCard ? "border-white/8" :
-                  status === "ACTIVE" ? "border-emerald-500/20" : "border-red-500/20"
+                    status === "ACTIVE" ? "border-emerald-500/20" : "border-red-500/20"
                 }
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></svg>}
               />
               <StatCard
-                label="Spent (30d)"
+                label="Spent"
                 value={`₹${spent30.toLocaleString("en-IN")}`}
                 sub="Last 30 days"
                 accent="border-white/8"
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>}
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>}
               />
             </>
           )}
@@ -153,10 +153,9 @@ export default function DashboardPage() {
             </div>
             <div className="w-full h-2 bg-white/8 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  limitPercent! >= 100 ? "bg-red-500" :
+                className={`h-full rounded-full transition-all duration-500 ${limitPercent! >= 100 ? "bg-red-500" :
                   limitPercent! >= 80 ? "bg-amber-500" : "bg-emerald-500"
-                }`}
+                  }`}
                 style={{ width: `${limitPercent}%` }}
               />
             </div>

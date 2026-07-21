@@ -17,11 +17,11 @@ export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [contactOpen, setContactOpen]       = useState(false);
-  const [contactSent, setContactSent]       = useState(false);
-  const [contactError, setContactError]     = useState("");
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
+  const [contactError, setContactError] = useState("");
   const [contactLoading, setContactLoading] = useState(false);
-  const [contactForm, setContactForm]       = useState({ name: "", phone: "", email: "", location: "" });
+  const [contactForm, setContactForm] = useState({ name: "", phone: "", email: "", location: "" });
 
   // NFC Simulator state
   const [nfcState, setNfcState] = useState<"idle" | "tapping" | "processing" | "settled">("idle");
@@ -34,15 +34,16 @@ export default function HomePage() {
 
   // Scroll graph state
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [pageScrollProgress, setPageScrollProgress] = useState(0);
   const scrollSectionRef = useRef<HTMLDivElement>(null);
 
   // ── Redirect logic ──
   useEffect(() => {
     if (status !== "authenticated") return;
     const role = (session?.user as { role?: string })?.role;
-    if (role === "ADMIN")         router.replace("/admin");
+    if (role === "ADMIN") router.replace("/admin");
     else if (role === "MERCHANT") router.replace("/merchant");
-    else if (role === "USER")     router.replace("/dashboard");
+    else if (role === "USER") router.replace("/dashboard");
   }, [status, session, router]);
 
   // ── Scroll reveal + 3D tilt ──
@@ -92,16 +93,22 @@ export default function HomePage() {
     };
   }, []);
 
-  // Scroll graph tracking
+  // Scroll graph + page progress tracking
   useEffect(() => {
     const handleScroll = () => {
-      if (!scrollSectionRef.current) return;
-      const rect = scrollSectionRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const progress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (rect.height + windowHeight)));
-      setScrollProgress(progress);
+      // Graph section progress
+      if (scrollSectionRef.current) {
+        const rect = scrollSectionRef.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const progress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (rect.height + windowHeight)));
+        setScrollProgress(progress);
+      }
+      // Overall page scroll progress
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pageProgress = docHeight > 0 ? Math.min(1, window.scrollY / docHeight) : 0;
+      setPageScrollProgress(pageProgress);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -131,7 +138,7 @@ export default function HomePage() {
             osc2.frequency.setValueAtTime(1760, ctx.currentTime + 0.08);
             osc2.type = "sine"; osc2.start(ctx.currentTime + 0.08); osc2.stop(ctx.currentTime + 0.28);
           }
-        } catch (_) {}
+        } catch (_) { }
 
         const merchants = ["Campus Cafeteria", "Sports Complex", "Library Printing", "Tech Lab Store"];
         const merchant = merchants[Math.floor(Math.random() * merchants.length)];
@@ -183,10 +190,35 @@ export default function HomePage() {
         <div className="orb w-[350px] h-[350px] bg-primary/30 top-[20%] right-[15%]" style={{ animationDelay: "-15s" }} />
       </div>
 
+      {/* Scroll Progress Line */}
+      <div className="fixed left-4 md:left-8 top-0 bottom-0 z-40 pointer-events-none hidden md:flex flex-col items-center">
+        {/* Track line (faint) */}
+        <div className="absolute top-20 bottom-8 w-px bg-white/[0.04]" />
+        {/* Active fill */}
+        <div
+          className="absolute top-20 w-px origin-top transition-none"
+          style={{
+            height: `calc((100% - 7rem) * ${pageScrollProgress})`,
+            background: `linear-gradient(to bottom, transparent, #aec6ff 30%, #00daf3 70%, #d0bcff)`,
+            opacity: pageScrollProgress > 0.01 ? 0.6 : 0,
+          }}
+        />
+        {/* Glowing dot at the tip */}
+        {pageScrollProgress > 0.01 && (
+          <div
+            className="absolute w-2 h-2 rounded-full bg-tertiary shadow-[0_0_12px_rgba(0,218,243,0.8),0_0_4px_rgba(0,218,243,0.5)] transition-none"
+            style={{
+              top: `calc(5rem + (100% - 7rem) * ${pageScrollProgress})`,
+              transform: "translate(-50%, -50%) translateX(50%)",
+            }}
+          />
+        )}
+      </div>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl border-b border-white/5">
         <div className="flex justify-between items-center px-4 md:px-8 py-4 max-w-7xl mx-auto">
-          <div className="text-2xl font-bold tracking-tighter text-slate-50 flex items-center gap-3 group cursor-pointer">
+          <div className="text-2xl font-extrabold tracking-tighter text-slate-50 flex items-center gap-3 group cursor-pointer font-display">
             <Image src="/tapfinity-logo.png" alt="Tapfinity" width={36} height={36} className="rounded-lg group-hover:rotate-12 transition-transform duration-500" />
             Tapfinity
           </div>
@@ -210,35 +242,35 @@ export default function HomePage() {
               <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse" />
               <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Next-Gen Campus Payments</span>
             </div>
-            <h1 className="reveal text-5xl md:text-8xl font-black tracking-tighter leading-tight text-gradient">
-              The Future of <br />Campus Payments
+            <h1 className="reveal text-5xl md:text-7xl font-extrabold tracking-[-0.06em] leading-[1.05] text-gradient font-display">
+              The Future of <br className="hidden md:block" />Payments on Campus
             </h1>
-            <p className="reveal text-on-surface-variant text-xl max-w-2xl leading-relaxed" style={{ transitionDelay: "0.1s" }}>
-              Experience atomic NFC transactions on a sovereign ledger. Fast, secure, and entirely cashless infrastructure for modern educational ecosystems.
+            <p className="reveal text-on-surface-variant text-lg md:text-xl max-w-2xl leading-relaxed font-body" style={{ transitionDelay: "0.1s" }}>
+              Experience atomic NFC transactions on a sovereign ledger.<br></br> Fast, secure, and entirely cashless infrastructure for modern educational ecosystems.
             </p>
             <div className="reveal flex flex-wrap gap-4 mt-4" style={{ transitionDelay: "0.2s" }}>
               <Link href="/login">
-                <button className="bg-gradient-primary text-on-primary font-bold px-8 py-4 rounded-xl flex items-center gap-2 group transition-all hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-primary/40">
+                <button className="bg-gradient-primary text-on-primary font-bold px-8 py-4 rounded-xl flex items-center gap-2 group transition-all hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-primary/40 font-display tracking-tight">
                   Sign In to Dashboard
                   <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </Link>
-              <button onClick={() => setContactOpen(true)} className="px-8 py-4 rounded-xl border border-outline-variant/30 text-on-surface font-medium hover:bg-white/5 transition-all hover:border-primary/50">
+              <button onClick={() => setContactOpen(true)} className="px-8 py-4 rounded-xl border border-outline-variant/30 text-on-surface font-semibold hover:bg-white/5 transition-all hover:border-primary/50 font-display tracking-tight">
                 See how it works
               </button>
             </div>
             <div className="reveal flex flex-wrap gap-6 md:gap-8 mt-12" style={{ transitionDelay: "0.3s" }}>
               <div className="flex flex-col">
-                <span className="font-label text-2xl font-bold text-tertiary">&lt; 50ms</span>
-                <span className="text-xs text-on-surface-variant uppercase tracking-widest">Latency</span>
+                <span className="font-display text-3xl font-extrabold text-tertiary tracking-tight">&lt; 50ms</span>
+                <span className="text-[10px] text-on-surface-variant uppercase tracking-[0.2em] font-label mt-1">Latency</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-label text-2xl font-bold text-secondary">0 Cash</span>
-                <span className="text-xs text-on-surface-variant uppercase tracking-widest">In Circulation</span>
+                <span className="font-display text-3xl font-extrabold text-secondary tracking-tight">0 Cash</span>
+                <span className="text-[10px] text-on-surface-variant uppercase tracking-[0.2em] font-label mt-1">In Circulation</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-label text-2xl font-bold text-primary">100%</span>
-                <span className="text-xs text-on-surface-variant uppercase tracking-widest">Atomic Success</span>
+                <span className="font-display text-3xl font-extrabold text-primary tracking-tight">100%</span>
+                <span className="text-[10px] text-on-surface-variant uppercase tracking-[0.2em] font-label mt-1">Atomic Success</span>
               </div>
             </div>
           </div>
@@ -256,7 +288,7 @@ export default function HomePage() {
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
                 </div>
                 <div className="text-[10px] text-on-surface-variant font-label bg-white/5 px-3 py-1 rounded-full border border-white/5 uppercase tracking-wider">
-                  Device: Canteen_04
+                  Device: Cafeteria
                 </div>
               </div>
 
@@ -272,11 +304,10 @@ export default function HomePage() {
 
                   <div
                     onClick={triggerNfcTap}
-                    className={`w-24 h-24 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 ${
-                      nfcState === "processing" ? "bg-primary/20 border border-primary/50" :
-                      nfcState === "settled"    ? "bg-emerald-500/20 border border-emerald-500" :
-                      "bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-white/10"
-                    }`}
+                    className={`w-24 h-24 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 ${nfcState === "processing" ? "bg-primary/20 border border-primary/50" :
+                      nfcState === "settled" ? "bg-emerald-500/20 border border-emerald-500" :
+                        "bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-white/10"
+                      }`}
                   >
                     {(nfcState === "idle" || nfcState === "tapping") && (
                       <>
@@ -297,8 +328,17 @@ export default function HomePage() {
                 </div>
 
                 <div className="text-center mt-4">
-                  <div className="text-xs text-on-surface-variant font-label uppercase tracking-widest">Amount Due</div>
-                  <div className="text-2xl font-black font-label text-slate-100 mt-1">₹120.00</div>
+                  {nfcState === "settled" ? (
+                    <>
+                      <div className="text-xs text-emerald-400 font-label uppercase tracking-widest">Payment Successful</div>
+                      <div className="text-2xl font-black font-label text-emerald-400 mt-1">✓ Paid</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs text-on-surface-variant font-label uppercase tracking-widest">Amount Due</div>
+                      <div className="text-2xl font-black font-label text-slate-100 mt-1">₹120.00</div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -312,10 +352,10 @@ export default function HomePage() {
                   {transactions.map((tx) => (
                     <div key={tx.id} className="flex justify-between items-center text-[10px] animate-fade-up">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-slate-200">{tx.merchant}</span>
-                        <span className="text-[8px] text-on-surface-variant/60 font-mono">{tx.id}</span>
+                        <span className="font-semibold text-slate-200 ">{tx.merchant}</span>
+                        {/*<span className="text-[8px] text-on-surface-variant/60 font-mono">{tx.id}</span>*/}
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <span className="font-semibold font-label text-slate-100">-₹{tx.amount}</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       </div>
@@ -369,11 +409,11 @@ export default function HomePage() {
               <p className="text-on-surface-variant text-sm flex-grow">Monitor campus-wide spending habits in real-time. Merchants see peak hours while admins manage resource allocation.</p>
 
               {/* Interactive scroll-driven SVG graph */}
-              <div className="mt-6 relative bg-black/30 rounded-xl p-3 border border-white/5 overflow-hidden">
+              <div className="mt-6 relative bg-black/30 rounded-xl p-3 border border-white/5 overflow-hidden group/graph cursor-pointer">
                 <div className="flex justify-between text-[9px] font-mono text-on-surface-variant/50 mb-2">
                   <span>08:00</span><span>13:00</span><span>20:00</span>
                 </div>
-                <svg className="w-full h-[90px]" viewBox="0 0 260 80" preserveAspectRatio="none">
+                <svg className="w-full h-[120px]" viewBox="0 0 260 100" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <linearGradient id="analyticsFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#00daf3" stopOpacity="0.3" />
@@ -386,10 +426,11 @@ export default function HomePage() {
                     </linearGradient>
                   </defs>
                   {/* faint dashed full path */}
-                  <path d="M0 70 Q40 50 55 25 T90 65 T145 15 T180 60 T235 22 L260 70" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <path d="M0 85 Q40 65 55 35 T90 75 T145 25 T180 70 T235 32 L260 85 L260 100 L0 100 Z" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" strokeDasharray="4,4" />
                   {/* scroll-animated fill + stroke */}
                   <path
-                    d="M0 70 Q40 50 55 25 T90 65 T145 15 T180 60 T235 22 L260 70"
+                    className="graph-wave"
+                    d="M0 85 Q40 65 55 35 T90 75 T145 25 T180 70 T235 32 L260 85 L260 100 L0 100 Z"
                     fill="url(#analyticsFill)"
                     stroke="url(#analyticsLine)"
                     strokeWidth="2.5"
@@ -398,7 +439,7 @@ export default function HomePage() {
                   />
                   {/* active dot */}
                   {scrollProgress > 0.05 && (
-                    <circle cx={5 + 250 * Math.min(scrollProgress * 2, 1)} cy="35" r="3.5" fill="#00daf3" className="animate-pulse" />
+                    <circle cx={5 + 250 * Math.min(scrollProgress * 2, 1)} cy="50" r="4" fill="#00daf3" className="animate-pulse" />
                   )}
                 </svg>
                 <div className="text-[9px] font-label text-tertiary/80 mt-1 text-right">
@@ -409,7 +450,7 @@ export default function HomePage() {
 
             {/* Square Card */}
             <div className="stagger-item glass-card rounded-[2rem] p-10 flex flex-col group">
-              <span className="material-symbols-outlined text-4xl text-secondary mb-6 group-hover:animate-spin">hub</span>
+              <span className="material-symbols-outlined text-4xl text-secondary mb-6 transition-transform group-hover:scale-110 duration-500">hub</span>
               <h3 className="text-xl font-bold tracking-tight mb-2 group-hover:text-secondary transition-colors">Atomic Transactions</h3>
               <p className="text-sm text-on-surface-variant">Indivisible operations ensuring no partial states or double spending.</p>
             </div>
@@ -600,8 +641,8 @@ export default function HomePage() {
                     {contactLoading ? (
                       <>
                         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
                         Sending...
                       </>

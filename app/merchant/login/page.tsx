@@ -49,6 +49,7 @@ export default function MerchantLogin() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#07050f] text-white font-body overflow-hidden">
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       <meta name="robots" content="noindex, nofollow" />
 
       {/* Left Panel: Merchant Branding (Hidden on Mobile) */}
@@ -63,9 +64,7 @@ export default function MerchantLogin() {
         <div className="relative z-10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-violet-500/15 border border-violet-500/20 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-              </svg>
+              <span className="material-symbols-outlined text-violet-400 text-lg">offline_bolt</span>
             </div>
             <span className="text-xl font-bold tracking-tight">Tapfinity</span>
           </div>
@@ -116,9 +115,7 @@ export default function MerchantLogin() {
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-10">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 mb-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-              </svg>
+              <span className="material-symbols-outlined text-violet-400 text-3xl">offline_bolt</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Tapfinity</h1>
             <p className="text-sm text-gray-500">Merchant Portal</p>

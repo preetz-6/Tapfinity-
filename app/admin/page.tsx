@@ -12,13 +12,14 @@ const PIE_COLORS = ["#34d399", "#60a5fa", "#f472b6", "#a78bfa"];
 
 type UserKpis = { total: number; active: number; blocked: number; totalBalance: number; };
 type MerchantKpis = { total: number; active: number; blocked: number; };
+type StaffKpis = { total: number; active: number; blocked: number; };
 type TxByDay = { day: string; count: number; };
 type TxTypeSplit = { type: string; _count: { _all: number }; };
-type RecentTx = { id: string; type: "CREDIT"|"DEBIT"; amount: number; user?: { email?: string }; createdAt: string; };
+type RecentTx = { id: string; type: "CREDIT" | "DEBIT"; amount: number; user?: { email?: string }; createdAt: string; };
 type RecentAction = { id: string; actionType: string; targetIdentifier: string; admin?: { name?: string }; createdAt: string; };
 type FailedAttempt = { id: string; failureReason?: string; amount: number; createdAt: string; merchant?: { name?: string }; };
 type DashboardData = {
-  kpis: { users: UserKpis; merchants: MerchantKpis };
+  kpis: { users: UserKpis; merchants: MerchantKpis; staff: StaffKpis };
   txByDay: TxByDay[];
   txTypeSplit: TxTypeSplit[];
   recentTransactions: RecentTx[];
@@ -37,26 +38,26 @@ const ChartTooltip = ({ active, payload, label }: { active?: boolean; payload?: 
 };
 
 const KPI_ICONS: Record<string, React.ReactNode> = {
-  users:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  active:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>,
-  blocked: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>,
-  wallet:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12a2 2 0 0 1-4 0 2 2 0 0 1 4 0z"/></svg>,
-  store:   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  users: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+  active: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12" /></svg>,
+  blocked: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg>,
+  wallet: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M16 12a2 2 0 0 1-4 0 2 2 0 0 1 4 0z" /></svg>,
+  store: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
 };
 
 const ICON_COLORS: Record<string, string> = {
-  users:   "bg-blue-500/10 text-blue-400",
-  active:  "bg-emerald-500/10 text-emerald-400",
+  users: "bg-blue-500/10 text-blue-400",
+  active: "bg-emerald-500/10 text-emerald-400",
   blocked: "bg-red-500/10 text-red-400",
-  wallet:  "bg-violet-500/10 text-violet-400",
-  store:   "bg-indigo-500/10 text-indigo-400",
+  wallet: "bg-violet-500/10 text-violet-400",
+  store: "bg-indigo-500/10 text-indigo-400",
 };
 
-function KpiCard({ label, value, sub, icon, accent }: { label: string; value: string|number; sub?: string; icon: string; accent: string }) {
+function KpiCard({ label, value, sub, icon, accent }: { label: string; value: string | number; sub?: string; icon: string; accent: string }) {
   return (
     <div className={`rounded-2xl border bg-gradient-to-b from-white/[0.03] to-transparent p-5 flex items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${accent ?? "border-white/[0.06] hover:border-white/[0.12]"}`}>
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${ICON_COLORS[icon] ?? "bg-white/5 text-gray-400"}`}>
-        {KPI_ICONS[icon] ?? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/></svg>}
+        {KPI_ICONS[icon] ?? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /></svg>}
       </div>
       <div className="min-w-0">
         <p className="text-xs text-gray-500 font-semibold tracking-wide">{label}</p>
@@ -79,10 +80,10 @@ const FAILURE_LABELS: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const [data, setData]           = useState<DashboardData | null>(null);
-  const [loading, setLoading]     = useState(true);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [refreshing, setRefreshing]   = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async (silent = false) => {
     if (silent) setRefreshing(true);
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({length: 8}).map((_,i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="rounded-2xl border border-white/5 h-72 skeleton" />
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const { kpis: { users, merchants }, txByDay, txTypeSplit, recentTransactions, recentActions, failedAttempts } = data;
+  const { kpis: { users, merchants, staff }, txByDay, txTypeSplit, recentTransactions, recentActions, failedAttempts } = data;
   const pieData = txTypeSplit.map(t => ({ name: t.type, value: t._count._all }));
   const totalTx = txByDay.reduce((s, d) => s + d.count, 0);
 
@@ -134,7 +135,7 @@ export default function AdminDashboard() {
           <h1 className="text-xl font-black text-white">Dashboard</h1>
           <p className="text-xs text-gray-500 mt-0.5">
             {lastUpdated
-              ? `Updated ${lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} · auto-refreshes every 30s`
+              ? `Updated at ${lastUpdated.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
               : "Live overview of the entire platform"}
           </p>
         </div>
@@ -145,9 +146,9 @@ export default function AdminDashboard() {
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
             className={refreshing ? "animate-spin" : ""}>
-            <polyline points="23 4 23 10 17 10"/>
-            <polyline points="1 20 1 14 7 14"/>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
           {refreshing ? "Refreshing…" : "Refresh"}
         </button>
@@ -177,28 +178,38 @@ export default function AdminDashboard() {
 
       {/* User KPIs */}
       <div>
-        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Users</p>
+        <p className="text-xs text-gray-51000 uppercase tracking-widest mb-2 font-semibold">Users</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard label="Total Users" value={users.total}   icon="users" accent="border-white/8" />
-          <KpiCard label="Active" value={users.active}  sub="can transact" icon="active" accent="border-emerald-500/20" />
-          <KpiCard label="Blocked" value={users.blocked} sub="restricted"   icon="blocked" accent="border-red-500/20" />
-          <KpiCard label="Wallet Pool" value={`₹${users.totalBalance.toLocaleString("en-IN")}`} sub="total balance" icon="wallet" accent="border-blue-500/20" />
+          <KpiCard label="Total Wallet" value={`₹${users.totalBalance.toLocaleString("en-IN")}`} icon="wallet" accent="border-blue-500/20" />
+          <KpiCard label="Total Users" value={users.total} icon="users" accent="border-white/8" />
+          <KpiCard label="Active" value={users.active} icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked" value={users.blocked} icon="blocked" accent="border-red-500/20" />
         </div>
       </div>
 
       {/* Merchant KPIs */}
       <div>
-        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">Merchants</p>
+        <p className="text-xs text-gray-51000 uppercase tracking-widest mb-2 font-semibold">Merchants</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          <KpiCard label="Total Merchants" value={merchants.total}   icon="store" accent="border-white/8" />
-          <KpiCard label="Active" value={merchants.active}  sub="accepting payments" icon="active" accent="border-emerald-500/20" />
-          <KpiCard label="Blocked" value={merchants.blocked} sub="suspended"           icon="blocked" accent="border-red-500/20" />
+          <KpiCard label="Total Merchants" value={merchants.total} icon="store" accent="border-white/8" />
+          <KpiCard label="Active" value={merchants.active} icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked" value={merchants.blocked} icon="blocked" accent="border-red-500/20" />
+        </div>
+      </div>
+
+      {/* Staff KPIs */}
+      <div>
+        <p className="text-xs text-gray-51000 uppercase tracking-widest mb-2 font-semibold">Staff</p>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <KpiCard label="Total Staff" value={staff.total} icon="users" accent="border-white/8" />
+          <KpiCard label="Active" value={staff.active} icon="active" accent="border-emerald-500/20" />
+          <KpiCard label="Blocked" value={staff.blocked} icon="blocked" accent="border-red-500/20" />
         </div>
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="lg:col-span-3 rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.02] to-transparent p-6 shadow-lg shadow-black/10 hover:border-white/[0.12] transition-colors duration-300">
           <div className="flex items-center justify-between mb-5">
             <div>
               <p className="font-bold text-white">Transaction Volume</p>
@@ -211,7 +222,7 @@ export default function AdminDashboard() {
               <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="txGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#60a5fa" stopOpacity={0.3} />
+                    <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -252,7 +263,7 @@ export default function AdminDashboard() {
               <XAxis dataKey="day" stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis stroke="#374151" tick={{ fill: "#6b7280", fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
-              <Bar dataKey="count" radius={[6,6,0,0]}>
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                 {chartData.map((_, i) => <Cell key={i} fill={`hsl(${230 + i * 8}, 70%, ${50 + i * 3}%)`} />)}
               </Bar>
             </BarChart>
@@ -291,7 +302,7 @@ export default function AdminDashboard() {
             {recentActions.length === 0 && <p className="text-sm text-gray-500">No actions yet</p>}
             {recentActions.slice(0, 6).map(a => (
               <div key={a.id} className="flex items-start gap-2.5 py-2.5 border-b border-white/5 last:border-0">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-400"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></div>
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-white leading-tight">{a.actionType.replace(/_/g, " ")}</p>
                   <p className="text-xs text-gray-600 truncate mt-0.5">{a.targetIdentifier}</p>

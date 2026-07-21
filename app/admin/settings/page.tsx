@@ -37,11 +37,10 @@ function PinInput({
           <div
             key={i}
             onClick={() => inputRef.current?.focus()}
-            className={`w-3 h-3 rounded-full border-2 transition-all duration-150 cursor-text ${
-              i < value.length
+            className={`w-3 h-3 rounded-full border-2 transition-all duration-150 cursor-text ${i < value.length
                 ? "bg-blue-500 border-blue-500 scale-110"
                 : "bg-transparent border-white/20"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -63,15 +62,15 @@ function PinInput({
 }
 
 export default function AdminSettingsPage() {
-  const [pin, setPin]               = useState("");
+  const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [pinLoading, setPinLoading] = useState(false);
-  const [pinMsg, setPinMsg]         = useState<{ ok: boolean; text: string } | null>(null);
+  const [pinMsg, setPinMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [currentPin, setCurrentPin] = useState("");
-  const [newPin, setNewPin]         = useState("");
+  const [newPin, setNewPin] = useState("");
   const [changeLoading, setChangeLoading] = useState(false);
-  const [changeMsg, setChangeMsg]   = useState<{ ok: boolean; text: string } | null>(null);
+  const [changeMsg, setChangeMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function setInitialPin() {
     if (!/^\d{6}$/.test(pin)) {
@@ -81,7 +80,7 @@ export default function AdminSettingsPage() {
       setPinMsg({ ok: false, text: "PINs do not match." }); return;
     }
     setPinLoading(true); setPinMsg(null);
-    const res  = await fetch("/api/admin/pin", {
+    const res = await fetch("/api/admin/pin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin }),
@@ -112,7 +111,7 @@ export default function AdminSettingsPage() {
       setChangeMsg({ ok: false, text: d.error || "Current PIN incorrect." });
       return;
     }
-    const res  = await fetch("/api/admin/pin", {
+    const res = await fetch("/api/admin/pin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin: newPin }),
@@ -143,11 +142,10 @@ export default function AdminSettingsPage() {
           <PinInput label="Confirm PIN" value={confirmPin} onChange={setConfirmPin} />
 
           {pinMsg && (
-            <div className={`rounded-xl px-4 py-3 text-sm border ${
-              pinMsg.ok
+            <div className={`rounded-xl px-4 py-3 text-sm border ${pinMsg.ok
                 ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-400"
                 : "bg-red-500/8 border-red-500/20 text-red-400"
-            }`}>
+              }`}>
               {pinMsg.text}
             </div>
           )}
@@ -160,8 +158,8 @@ export default function AdminSettingsPage() {
             {pinLoading ? (
               <>
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 Setting PIN…
               </>
@@ -179,11 +177,10 @@ export default function AdminSettingsPage() {
           <PinInput label="New PIN" value={newPin} onChange={setNewPin} />
 
           {changeMsg && (
-            <div className={`rounded-xl px-4 py-3 text-sm border ${
-              changeMsg.ok
+            <div className={`rounded-xl px-4 py-3 text-sm border ${changeMsg.ok
                 ? "bg-emerald-500/8 border-emerald-500/20 text-emerald-400"
                 : "bg-red-500/8 border-red-500/20 text-red-400"
-            }`}>
+              }`}>
               {changeMsg.text}
             </div>
           )}
@@ -196,8 +193,8 @@ export default function AdminSettingsPage() {
             {changeLoading ? (
               <>
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 Changing PIN…
               </>
@@ -206,11 +203,7 @@ export default function AdminSettingsPage() {
         </div>
       </SectionCard>
 
-      <div className="rounded-xl bg-blue-500/5 border border-blue-500/15 px-4 py-3">
-        <p className="text-xs text-blue-400/80 leading-relaxed">
-          The PIN is hashed with bcrypt and never stored in plain text. After 5 wrong attempts it locks — reset via database if needed. Never share your PIN.
-        </p>
-      </div>
+
     </div>
   );
 }

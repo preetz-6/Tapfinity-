@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const [
     totalUsers, activeUsers, blockedUsers, totalBalanceAgg,
     totalMerchants, activeMerchants, blockedMerchants,
+    totalStaff, activeStaff, blockedStaff,
     txTypeSplit, recentTransactions, recentActions, failedAttempts,
   ] = await Promise.all([
     prisma.user.count(),
@@ -21,6 +22,9 @@ export async function GET(req: NextRequest) {
     prisma.merchant.count(),
     prisma.merchant.count({ where: { status: "ACTIVE" } }),
     prisma.merchant.count({ where: { status: "BLOCKED" } }),
+    prisma.staff.count(),
+    prisma.staff.count({ where: { status: "ACTIVE" } }),
+    prisma.staff.count({ where: { status: "BLOCKED" } }),
     prisma.transaction.groupBy({ by: ["type"], _count: { _all: true } }),
     prisma.transaction.findMany({
       take: 10,
@@ -79,6 +83,7 @@ export async function GET(req: NextRequest) {
     kpis: {
       users: { total: totalUsers, active: activeUsers, blocked: blockedUsers, totalBalance: totalBalanceAgg._sum.balance ?? 0 },
       merchants: { total: totalMerchants, active: activeMerchants, blocked: blockedMerchants },
+      staff: { total: totalStaff, active: activeStaff, blocked: blockedStaff },
     },
     txByDay,
     txTypeSplit,

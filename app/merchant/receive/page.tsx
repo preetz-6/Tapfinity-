@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import PaymentSuccess from "@/app/components/PaymentSuccess";
+import PaymentFailure from "@/app/components/PaymentFailure";
 
 /* Web NFC types are not in standard TS libs — we cast at usage sites instead */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,7 +31,7 @@ export default function ReceivePayment() {
   const [requestId, setRequestId]         = useState<string | null>(null);
   const [failureReason, setFailureReason] = useState("DEFAULT");
   const [timeLeft, setTimeLeft]           = useState(WAIT_SECONDS);
-  const [successData, setSuccessData]     = useState<{ name?: string; balance?: number } | null>(null);
+  const [successData, setSuccessData]     = useState<{ name?: string; balance?: number; transactionId?: string } | null>(null);
 
   const nfcStartedRef   = useRef(false);
   const nfcProcessedRef = useRef(false);
@@ -146,7 +148,7 @@ export default function ReceivePayment() {
           const result = await res.json();
 
           if (result.ok) {
-            setSuccessData({ name: result.user?.name, balance: result.balance });
+            setSuccessData({ name: result.user?.name, balance: result.balance, transactionId: result.transactionId });
             setState("SUCCESS");
           } else {
             // API returns generic error + specific code separately (TAP-005)
@@ -199,12 +201,7 @@ export default function ReceivePayment() {
     return () => clearTimeout(t);
   }, [state, timeLeft, fail]);
 
-  /* ── Auto-reset after success ── */
-  useEffect(() => {
-    if (state !== "SUCCESS") return;
-    const t = setTimeout(reset, 5000);
-    return () => clearTimeout(t);
-  }, [state, reset]);
+  /* ── Auto-reset after success removed — PaymentSuccess has an onDone button ── */
 
   /* ── Cleanup on unmount ── */
   useEffect(() => () => stopScan(), [stopScan]);
@@ -334,64 +331,28 @@ export default function ReceivePayment() {
 
         {/* SUCCESS */}
         {state === "SUCCESS" && (
-          <div className="text-center">
-            <div className="bg-[#030e08] border border-emerald-500/30 rounded-2xl p-8 space-y-4">
-              <div className="relative w-24 h-24 mx-auto">
-                <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping" style={{ animationDuration: "2s" }} />
-                <div className="relative w-full h-full rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-emerald-400">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </div>
-              </div>
-              <p className="text-xs text-emerald-500/60 uppercase tracking-widest font-semibold">Payment received</p>
-              <p className="text-4xl font-black text-white">₹{amount}</p>
-              {successData?.name && (
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-4 py-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <p className="text-sm text-gray-300">from <span className="text-white font-semibold">{successData.name}</span></p>
-                </div>
-              )}
-              {successData?.balance !== undefined && (
-                <p className="text-xs text-gray-600">Customer balance: ₹{successData.balance.toLocaleString("en-IN")}</p>
-              )}
-              <p className="text-xs text-gray-600">Returning to home...</p>
-            </div>
-          </div>
+          <PaymentSuccess
+            amount={Number(amount)}
+            name={successData?.name}
+            transactionId={successData?.transactionId}
+            time={new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            onDone={() => reset()}
+          />
         )}
 
         {/* FAILED */}
         {state === "FAILED" && (
-          <div className="text-center">
-            <div className="bg-[#0d0508] border border-red-500/30 rounded-2xl p-8 space-y-5">
-              <div className="w-24 h-24 mx-auto rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs text-red-500/60 uppercase tracking-widest font-semibold mb-1">Payment failed</p>
-                <h2 className="text-xl font-bold text-red-400">{failure.title}</h2>
-                <p className="text-gray-500 text-sm mt-2 leading-relaxed max-w-xs mx-auto">{failure.desc}</p>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-lg bg-red-500/8 border border-red-500/15 px-3 py-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                <span className="text-xs text-red-400/70 font-mono">{failureReason}</span>
-              </div>
-              <div className="space-y-2 pt-1">
-                <button onClick={async () => { if (requestId) await fetch(`/api/merchant/payment-request/${requestId}`, { method: "DELETE" }).catch(() => {}); nfcProcessedRef.current = false; nfcStartedRef.current = false; setRequestId(null); setState("ENTER"); setFailureReason("DEFAULT"); }}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold active:scale-95 transition shadow-lg shadow-violet-500/20">
-                  Try Again
-                </button>
-                <button onClick={() => reset(true)}
-                  className="w-full py-3 rounded-xl border border-white/10 text-gray-400 text-sm hover:bg-white/5 hover:text-white transition">
-                  Change Amount
-                </button>
-              </div>
-            </div>
-          </div>
+          <PaymentFailure
+            message={`${failure.title} — ${failure.desc}`}
+            onRetry={async () => {
+              if (requestId) await fetch(`/api/merchant/payment-request/${requestId}`, { method: "DELETE" }).catch(() => {});
+              nfcProcessedRef.current = false;
+              nfcStartedRef.current = false;
+              setRequestId(null);
+              setState("ENTER");
+              setFailureReason("DEFAULT");
+            }}
+          />
         )}
 
       </div>

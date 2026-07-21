@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html, body {
+  overflow-x: clip;
+}
+
 /* Custom animations */
 @keyframes slide-in {
   from {
@@ -55,6 +59,20 @@
   animation: nfc-ping 1.8s ease-in-out infinite;
 }
 
+/* Graph wave hover animation */
+@keyframes graph-wave {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(-4px); }
+  50%  { transform: translateY(3px); }
+  75%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+.group\/graph:hover .graph-wave {
+  animation: graph-wave 1.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
 /* Skeleton shimmer */
 .skeleton {
   background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
@@ -105,6 +123,7 @@ input[type="number"] {
   --font-headline: "Inter", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-label: "Space Grotesk", sans-serif;
+  --font-display: var(--font-syne), "Inter", sans-serif;
 }
 
 /* Custom CSS from Stitch UI */
@@ -231,3 +250,50 @@ input[type="number"] {
     border-color: rgba(0, 218, 243, 0.4);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 218, 243, 0.1);
 }
+
+/* Homepage Redesign Animations */
+@keyframes card-breathe {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 112, 243, 0.45), 0 0 40px rgba(0, 218, 243, 0.25), inset 0 0 10px rgba(0, 218, 243, 0.45);
+    border-color: rgba(0, 218, 243, 0.45);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 45px rgba(0, 112, 243, 0.9), 0 0 75px rgba(0, 218, 243, 0.55), inset 0 0 20px rgba(0, 218, 243, 0.8);
+    border-color: rgba(0, 218, 243, 0.8);
+    transform: scale(1.04);
+  }
+}
+
+.animate-card-breathe {
+  animation: card-breathe 4s ease-in-out infinite;
+}
+
+@keyframes ray-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    stroke-width: 1.5;
+  }
+  50% {
+    opacity: 0.95;
+    stroke-width: 3.5;
+  }
+}
+
+.animate-ray-pulse {
+  animation: ray-pulse 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 35s linear infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

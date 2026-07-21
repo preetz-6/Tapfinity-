@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
-import { PrismaClient } from "@prisma/client";
 
 const MAX_FAILED_ATTEMPTS = 5;
 

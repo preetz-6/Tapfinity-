@@ -57,7 +57,7 @@ export default function CardPage() {
 
   return (
     <UserShell>
-      <div className="max-w-md mx-auto space-y-5">
+      <div className="space-y-5">
 
         <div>
           <h1 className="text-xl font-bold text-white">Card & Security</h1>

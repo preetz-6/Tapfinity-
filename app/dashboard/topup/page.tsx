@@ -8,7 +8,7 @@ export default function TopupPage() {
 
   return (
     <UserShell>
-      <div className="max-w-md mx-auto">
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-lg">+</div>
           <div>

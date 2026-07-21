@@ -49,7 +49,7 @@ export default function Login() {
       return;
     }
 
-    setLoadingText("Preparing dashboard, please wait...");
+    setLoadingText("Loading dashboard");
     router.replace("/dashboard");
   }
 
@@ -71,7 +71,7 @@ export default function Login() {
             <span className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20">
               <span className="material-symbols-outlined text-on-primary text-xl">offline_bolt</span>
             </span>
-            Tap<span className="text-primary">finity</span>
+            Tapfinity
           </Link>
         </div>
 
@@ -81,11 +81,11 @@ export default function Login() {
             <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Student Portal</span>
           </div>
           <h1 className="text-5xl font-black tracking-tighter leading-tight mb-6">
-            Access your <br/>
+            Access your <br />
             <span className="text-gradient">Dashboard</span>
           </h1>
           <p className="text-on-surface-variant text-sm leading-relaxed">
-            Check your balance, view transactions, and manage your campus payments — all in one place.
+            Check your balance, View transactions, and manage your campus payments — all in one place.
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function Login() {
         </div>
 
         <div className="w-full max-w-sm relative z-10">
-          
+
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-10 w-full flex flex-col items-center">
             <Link href="/" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-primary shadow-2xl shadow-primary/20 mb-4 transition-transform active:scale-95">
@@ -167,8 +167,8 @@ export default function Login() {
                 {loading ? (
                   <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                     {loadingText}
                   </>
@@ -181,15 +181,15 @@ export default function Login() {
               </button>
             </form>
           </div>
-          
+
           <div className="text-center mt-8 space-y-4">
-             <Link href="/" className="inline-flex items-center gap-2 text-xs font-label uppercase tracking-widest text-outline-variant hover:text-white transition-colors">
+            <Link href="/" className="inline-flex items-center gap-2 text-s font-label uppercase tracking-widest text-outline-variant hover:text-white transition-colors">
               <span className="material-symbols-outlined justify-center text-sm">arrow_back</span>
               Return to Homepage
-             </Link>
+            </Link>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
