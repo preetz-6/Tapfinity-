@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-build:
+    name: Lint → Typecheck → Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Code quality ──
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      # ── Prisma schema validation ──
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Ensure Prisma client is in sync
+        run: |
+          npx prisma generate --no-engine
+          git diff --exit-code || (echo "::error::Prisma client is out of sync. Run 'npx prisma generate' and commit." && exit 1)
+
+      # ── Build ──
+      - name: Build Next.js
+        run: npm run build
+        env:
+          # Dummy env vars so next build completes without a real database
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+          NEXTAUTH_SECRET: "ci-secret-placeholder"
+          NEXTAUTH_URL: "http://localhost:3000"
+          CARD_SECRET_SALT: "ci-salt-placeholder"
